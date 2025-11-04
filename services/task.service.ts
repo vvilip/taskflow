@@ -25,12 +25,11 @@ class TaskService {
   }
 
   /**
-   * Get inbox tasks (only tasks without due date and in inbox status)
+   * Get inbox tasks (tasks without due date - unscheduled)
    */
   async getInboxTasks(): Promise<Task[]> {
     const tasks = await this.getAllTasks();
     return tasks.filter(task => 
-      task.status === 'inbox' && 
       !task.completed && 
       !task.dueDate
     );
@@ -125,7 +124,7 @@ class TaskService {
       id: generateId(),
       title: taskData.title || '',
       description: taskData.description,
-      status: taskData.status || 'inbox',
+      status: taskData.status,
       priority: taskData.priority,
       dueDate: taskData.dueDate,
       projectId: taskData.projectId,
@@ -159,13 +158,6 @@ class TaskService {
       id: taskId,
       updatedAt: Date.now(),
     };
-
-    // Auto-move out of inbox only when task gets a due date or status change
-    if (currentTask.status === 'inbox') {
-      if (updates.dueDate || (updates.status && updates.status !== 'inbox')) {
-        updatedTask.status = updates.status || 'next';
-      }
-    }
 
     data.tasks[taskIndex] = updatedTask;
     await storageService.saveData(data);

@@ -5,7 +5,7 @@
 
 export type Priority = 'low' | 'medium' | 'high';
 
-export type TaskStatus = 'inbox' | 'next' | 'waiting' | 'someday' | 'done';
+export type TaskStatus = 'waiting' | 'someday';
 
 export interface Tag {
   id: string;
@@ -29,7 +29,7 @@ export interface Task {
   id: string;
   title: string;
   description?: string;
-  status: TaskStatus;
+  status?: TaskStatus;
   priority?: Priority;
   dueDate?: number; // timestamp
   projectId?: string;

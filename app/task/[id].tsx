@@ -21,7 +21,7 @@ export default function TaskDetailScreen() {
   const [task, setTask] = useState<Partial<Task>>({
     title: '',
     description: '',
-    status: 'inbox',
+    status: undefined,
     priority: undefined,
     dueDate: dueDateParam ? parseInt(dueDateParam) : undefined,
     projectId: projectIdParam,
@@ -117,15 +117,36 @@ export default function TaskDetailScreen() {
     });
   };
 
-  const setDueDate = (days: number | null) => {
-    if (days === null) {
-      setTask({ ...task, dueDate: undefined });
-    } else {
-      const date = new Date();
-      date.setDate(date.getDate() + days);
-      date.setHours(23, 59, 59, 999);
-      setTask({ ...task, dueDate: date.getTime() });
+  const isDueDateToday = (timestamp: number, daysOffset: number) => {
+    const taskDate = new Date(timestamp);
+    taskDate.setHours(0, 0, 0, 0);
+    const compareDate = new Date();
+    compareDate.setDate(compareDate.getDate() + daysOffset);
+    compareDate.setHours(0, 0, 0, 0);
+    return taskDate.getTime() === compareDate.getTime();
+  };
+
+  const setDueDate = (days: number) => {
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    date.setHours(23, 59, 59, 999);
+    const newDate = date.getTime();
+    
+    // Toggle: if the same date is already set, remove it
+    if (task.dueDate) {
+      const existingDate = new Date(task.dueDate);
+      existingDate.setHours(0, 0, 0, 0);
+      const compareDate = new Date();
+      compareDate.setDate(compareDate.getDate() + days);
+      compareDate.setHours(0, 0, 0, 0);
+      
+      if (existingDate.getTime() === compareDate.getTime()) {
+        setTask({ ...task, dueDate: undefined });
+        return;
+      }
     }
+    
+    setTask({ ...task, dueDate: newDate });
   };
 
   return (
@@ -186,7 +207,7 @@ export default function TaskDetailScreen() {
                   { borderColor: colors.border },
                   task.priority === priority && [styles.priorityButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }],
                 ]}
-                onPress={() => setTask({ ...task, priority })}
+                onPress={() => setTask({ ...task, priority: task.priority === priority ? undefined : priority })}
               >
                 <ThemedText
                   style={[
@@ -194,16 +215,10 @@ export default function TaskDetailScreen() {
                     task.priority === priority && styles.priorityTextActive,
                   ]}
                 >
-                  {priority.charAt(0).toUpperCase() + priority.slice(1)}
+                  {priority === 'high' ? '🔴 High' : priority === 'medium' ? '🟡 Medium' : '🟢 Low'}
                 </ThemedText>
               </TouchableOpacity>
             ))}
-            <TouchableOpacity
-              style={[styles.priorityButton, { borderColor: colors.border }]}
-              onPress={() => setTask({ ...task, priority: undefined })}
-            >
-              <ThemedText style={styles.priorityText}>None</ThemedText>
-            </TouchableOpacity>
           </ThemedView>
         </ThemedView>
 
@@ -211,33 +226,48 @@ export default function TaskDetailScreen() {
           <ThemedText style={styles.label}>Due Date</ThemedText>
           <ThemedView style={styles.dateContainer}>
             <TouchableOpacity
-              style={[styles.dateButton, { borderColor: colors.border }]}
+              style={[
+                styles.dateButton, 
+                { borderColor: colors.border },
+                task.dueDate && isDueDateToday(task.dueDate, 0) && [styles.dateButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }]
+              ]}
               onPress={() => setDueDate(0)}
             >
-              <ThemedText style={styles.dateButtonText}>Today</ThemedText>
+              <ThemedText style={[
+                styles.dateButtonText,
+                task.dueDate && isDueDateToday(task.dueDate, 0) && styles.dateButtonTextActive
+              ]}>Today</ThemedText>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.dateButton, { borderColor: colors.border }]}
+              style={[
+                styles.dateButton, 
+                { borderColor: colors.border },
+                task.dueDate && isDueDateToday(task.dueDate, 1) && [styles.dateButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }]
+              ]}
               onPress={() => setDueDate(1)}
             >
-              <ThemedText style={styles.dateButtonText}>Tomorrow</ThemedText>
+              <ThemedText style={[
+                styles.dateButtonText,
+                task.dueDate && isDueDateToday(task.dueDate, 1) && styles.dateButtonTextActive
+              ]}>Tomorrow</ThemedText>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.dateButton, { borderColor: colors.border }]}
+              style={[
+                styles.dateButton, 
+                { borderColor: colors.border },
+                task.dueDate && isDueDateToday(task.dueDate, 7) && [styles.dateButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }]
+              ]}
               onPress={() => setDueDate(7)}
             >
-              <ThemedText style={styles.dateButtonText}>Next Week</ThemedText>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.dateButton, { borderColor: colors.border }]}
-              onPress={() => setDueDate(null)}
-            >
-              <ThemedText style={styles.dateButtonText}>Clear</ThemedText>
+              <ThemedText style={[
+                styles.dateButtonText,
+                task.dueDate && isDueDateToday(task.dueDate, 7) && styles.dateButtonTextActive
+              ]}>Next Week</ThemedText>
             </TouchableOpacity>
           </ThemedView>
           {task.dueDate && (
             <ThemedText style={styles.selectedDate}>
-              {formatDate(task.dueDate)}
+              📅 {formatDate(task.dueDate)}
             </ThemedText>
           )}
         </ThemedView>
@@ -245,7 +275,7 @@ export default function TaskDetailScreen() {
         <ThemedView style={[styles.section, { borderBottomColor: colors.border }]}>
           <ThemedText style={styles.label}>Status</ThemedText>
           <ThemedView style={styles.statusContainer}>
-            {(['inbox', 'next', 'waiting', 'someday'] as TaskStatus[]).map((status) => (
+            {(['waiting', 'someday'] as TaskStatus[]).map((status) => (
               <TouchableOpacity
                 key={status}
                 style={[
@@ -253,7 +283,7 @@ export default function TaskDetailScreen() {
                   { borderColor: colors.border },
                   task.status === status && [styles.statusButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }],
                 ]}
-                onPress={() => setTask({ ...task, status })}
+                onPress={() => setTask({ ...task, status: task.status === status ? undefined : status })}
               >
                 <ThemedText
                   style={[
@@ -261,7 +291,7 @@ export default function TaskDetailScreen() {
                     task.status === status && styles.statusTextActive,
                   ]}
                 >
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                  {status === 'waiting' ? '⏳ Waiting' : '💭 Someday'}
                 </ThemedText>
               </TouchableOpacity>
             ))}
@@ -271,16 +301,6 @@ export default function TaskDetailScreen() {
         <ThemedView style={[styles.section, { borderBottomColor: colors.border }]}>
           <ThemedText style={styles.label}>Project</ThemedText>
           <ThemedView style={styles.projectContainer}>
-            <TouchableOpacity
-              style={[
-                styles.projectButton,
-                { borderColor: colors.border },
-                !task.projectId && [styles.projectButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }],
-              ]}
-              onPress={() => setTask({ ...task, projectId: undefined })}
-            >
-              <ThemedText style={[styles.projectText, !task.projectId && styles.projectTextActive]}>None</ThemedText>
-            </TouchableOpacity>
             {projects.map((project) => (
               <TouchableOpacity
                 key={project.id}
@@ -289,7 +309,7 @@ export default function TaskDetailScreen() {
                   { borderColor: colors.border },
                   task.projectId === project.id && [styles.projectButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }],
                 ]}
-                onPress={() => setTask({ ...task, projectId: project.id })}
+                onPress={() => setTask({ ...task, projectId: task.projectId === project.id ? undefined : project.id })}
               >
                 <ThemedText style={[styles.projectText, task.projectId === project.id && styles.projectTextActive]}>{project.name}</ThemedText>
               </TouchableOpacity>
@@ -386,8 +406,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
   },
+  dateButtonActive: {
+  },
   dateButtonText: {
     fontSize: 14,
+  },
+  dateButtonTextActive: {
+    color: '#fff',
+    fontWeight: '600',
   },
   selectedDate: {
     marginTop: 8,
