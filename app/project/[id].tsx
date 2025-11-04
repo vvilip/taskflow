@@ -270,6 +270,7 @@ export default function ProjectDetailScreen() {
                 onTaskPress={handleTaskPress}
                 onToggleComplete={handleToggleComplete}
                 emptyMessage="No tasks in this project yet"
+                scrollable={false}
               />
             </ThemedView>
           </>

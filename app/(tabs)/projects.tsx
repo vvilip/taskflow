@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, SafeAreaView, Alert, TouchableOpacity, FlatList, View } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { FabButton } from '@/components/fab-button';
@@ -12,9 +12,11 @@ export default function ProjectsScreen() {
   const [taskCounts, setTaskCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadProjects();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      loadProjects();
+    }, [])
+  );
 
   const loadProjects = async () => {
     try {

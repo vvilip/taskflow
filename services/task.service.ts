@@ -25,10 +25,16 @@ class TaskService {
   }
 
   /**
-   * Get inbox tasks
+   * Get inbox tasks (only tasks without due date and in inbox status)
    */
   async getInboxTasks(): Promise<Task[]> {
-    return this.getTasksByStatus('inbox');
+    const tasks = await this.getAllTasks();
+    return tasks.filter(task => 
+      task.status === 'inbox' && 
+      !task.completed && 
+      !task.dueDate &&
+      !task.projectId
+    );
   }
 
   /**
@@ -147,12 +153,20 @@ class TaskService {
       throw new Error('Task not found');
     }
 
+    const currentTask = data.tasks[taskIndex];
     const updatedTask = {
-      ...data.tasks[taskIndex],
+      ...currentTask,
       ...updates,
       id: taskId,
       updatedAt: Date.now(),
     };
+
+    // Auto-move out of inbox when task gets processed
+    if (currentTask.status === 'inbox') {
+      if (updates.dueDate || updates.projectId || (updates.status && updates.status !== 'inbox')) {
+        updatedTask.status = updates.status || 'next';
+      }
+    }
 
     data.tasks[taskIndex] = updatedTask;
     await storageService.saveData(data);

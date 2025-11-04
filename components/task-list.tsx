@@ -10,15 +10,33 @@ interface TaskListProps {
   onTaskPress: (task: Task) => void;
   onToggleComplete: (taskId: string) => void;
   emptyMessage?: string;
+  scrollable?: boolean;
 }
 
-export function TaskList({ tasks, onTaskPress, onToggleComplete, emptyMessage }: TaskListProps) {
+export function TaskList({ tasks, onTaskPress, onToggleComplete, emptyMessage, scrollable = true }: TaskListProps) {
   if (tasks.length === 0) {
     return (
       <ThemedView style={styles.emptyContainer}>
         <ThemedText style={styles.emptyText}>
           {emptyMessage || 'No tasks'}
         </ThemedText>
+      </ThemedView>
+    );
+  }
+
+  if (!scrollable) {
+    return (
+      <ThemedView style={styles.list}>
+        {tasks.map((item, index) => (
+          <React.Fragment key={item.id}>
+            <TaskItem
+              task={item}
+              onPress={() => onTaskPress(item)}
+              onToggleComplete={() => onToggleComplete(item.id)}
+            />
+            {index < tasks.length - 1 && <View style={styles.separator} />}
+          </React.Fragment>
+        ))}
       </ThemedView>
     );
   }

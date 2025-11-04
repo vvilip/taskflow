@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, SafeAreaView, Alert, ScrollView } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { TaskList } from '@/components/task-list';
@@ -14,9 +14,11 @@ export default function TodayScreen() {
   const [overdueTasks, setOverdueTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadTasks();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      loadTasks();
+    }, [])
+  );
 
   const loadTasks = async () => {
     try {
@@ -83,6 +85,7 @@ export default function TodayScreen() {
               tasks={overdueTasks}
               onTaskPress={handleTaskPress}
               onToggleComplete={handleToggleComplete}
+              scrollable={false}
             />
           </ThemedView>
         )}
@@ -94,6 +97,7 @@ export default function TodayScreen() {
               tasks={todayTasks}
               onTaskPress={handleTaskPress}
               onToggleComplete={handleToggleComplete}
+              scrollable={false}
             />
           </ThemedView>
         )}
@@ -105,6 +109,7 @@ export default function TodayScreen() {
               tasks={tomorrowTasks}
               onTaskPress={handleTaskPress}
               onToggleComplete={handleToggleComplete}
+              scrollable={false}
             />
           </ThemedView>
         )}
