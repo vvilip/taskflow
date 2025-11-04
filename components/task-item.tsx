@@ -18,7 +18,7 @@ export function TaskItem({ task, onPress, onToggleComplete }: TaskItemProps) {
 
   const priorityColor = task.priority === 'high' ? '#ef4444' : 
                        task.priority === 'medium' ? '#f59e0b' : 
-                       '#6b7280';
+                       colors.subtitle;
 
   const formatDate = (timestamp?: number) => {
     if (!timestamp) return null;
@@ -38,7 +38,11 @@ export function TaskItem({ task, onPress, onToggleComplete }: TaskItemProps) {
   return (
     <ThemedView style={styles.container}>
       <TouchableOpacity 
-        style={[styles.checkbox, task.completed && styles.checkboxCompleted]}
+        style={[
+          styles.checkbox, 
+          { borderColor: colors.placeholder },
+          task.completed && [styles.checkboxCompleted, { backgroundColor: colors.tint }]
+        ]}
         onPress={onToggleComplete}
       >
         {task.completed && <ThemedText style={styles.checkmark}>✓</ThemedText>}
@@ -92,14 +96,12 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#94a3b8',
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 2,
   },
   checkboxCompleted: {
-    backgroundColor: '#0a7ea4',
-    borderColor: '#0a7ea4',
+    borderWidth: 0,
   },
   checkmark: {
     color: '#fff',

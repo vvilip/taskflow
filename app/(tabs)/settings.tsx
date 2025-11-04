@@ -3,10 +3,16 @@ import { StyleSheet, SafeAreaView, Alert, TouchableOpacity, ScrollView, Switch }
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { storageService, taskService } from '@/services';
+import { useTheme } from '@/contexts/theme-context';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function SettingsScreen() {
   const [syncing, setSyncing] = useState(false);
   const [autoArchive, setAutoArchive] = useState(false);
+  const { themeMode, setThemeMode } = useTheme();
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme];
 
   const handleExport = async () => {
     try {
@@ -86,16 +92,65 @@ export default function SettingsScreen() {
       
       <ScrollView style={styles.scrollView}>
         <ThemedView style={styles.section}>
+          <ThemedText type="subtitle" style={styles.sectionTitle}>Appearance</ThemedText>
+          
+          <ThemedView style={[styles.option, { borderBottomColor: colors.border }]}>
+            <ThemedText style={styles.optionText}>Theme</ThemedText>
+            <ThemedView style={styles.themeOptions}>
+              <TouchableOpacity
+                style={[
+                  styles.themeButton,
+                  { borderColor: colors.border },
+                  themeMode === 'light' && [styles.themeButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }],
+                ]}
+                onPress={() => setThemeMode('light')}
+              >
+                <ThemedText style={[
+                  styles.themeButtonText,
+                  themeMode === 'light' && styles.themeButtonTextActive,
+                ]}>☀️ Light</ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.themeButton,
+                  { borderColor: colors.border },
+                  themeMode === 'dark' && [styles.themeButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }],
+                ]}
+                onPress={() => setThemeMode('dark')}
+              >
+                <ThemedText style={[
+                  styles.themeButtonText,
+                  themeMode === 'dark' && styles.themeButtonTextActive,
+                ]}>🌙 Dark</ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.themeButton,
+                  { borderColor: colors.border },
+                  themeMode === 'system' && [styles.themeButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }],
+                ]}
+                onPress={() => setThemeMode('system')}
+              >
+                <ThemedText style={[
+                  styles.themeButtonText,
+                  themeMode === 'system' && styles.themeButtonTextActive,
+                ]}>⚙️ System</ThemedText>
+              </TouchableOpacity>
+            </ThemedView>
+          </ThemedView>
+        </ThemedView>
+
+        <ThemedView style={styles.section}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>Data</ThemedText>
           
-          <TouchableOpacity style={styles.option} onPress={handleExport}>
+          <TouchableOpacity style={[styles.option, { borderBottomColor: colors.border }]} onPress={handleExport}>
             <ThemedText style={styles.optionText}>Export Data</ThemedText>
             <ThemedText style={styles.optionDescription}>
               Export all data as JSON file
             </ThemedText>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.option} onPress={handleClearCompleted}>
+          <TouchableOpacity style={[styles.option, { borderBottomColor: colors.border }]} onPress={handleClearCompleted}>
             <ThemedText style={styles.optionText}>Archive Completed Tasks</ThemedText>
             <ThemedText style={styles.optionDescription}>
               Remove old completed tasks (30+ days)
@@ -107,7 +162,7 @@ export default function SettingsScreen() {
           <ThemedText type="subtitle" style={styles.sectionTitle}>Sync</ThemedText>
           
           <TouchableOpacity 
-            style={styles.option} 
+            style={[styles.option, { borderBottomColor: colors.border }]} 
             onPress={handleSync}
             disabled={syncing}
           >
@@ -119,7 +174,7 @@ export default function SettingsScreen() {
             </ThemedText>
           </TouchableOpacity>
 
-          <ThemedView style={styles.option}>
+          <ThemedView style={[styles.option, { borderBottomColor: colors.border }]}>
             <ThemedView style={styles.optionWithSwitch}>
               <ThemedView style={styles.optionTextContainer}>
                 <ThemedText style={styles.optionText}>Auto Archive</ThemedText>
@@ -138,20 +193,20 @@ export default function SettingsScreen() {
         <ThemedView style={styles.section}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>About</ThemedText>
           
-          <ThemedView style={styles.option}>
+          <ThemedView style={[styles.option, { borderBottomColor: colors.border }]}>
             <ThemedText style={styles.optionText}>Version</ThemedText>
             <ThemedText style={styles.optionDescription}>1.0.0</ThemedText>
           </ThemedView>
 
-          <ThemedView style={styles.option}>
+          <ThemedView style={[styles.option, { borderBottomColor: colors.border }]}>
             <ThemedText style={styles.optionText}>Storage Format</ThemedText>
             <ThemedText style={styles.optionDescription}>JSON (Human-readable)</ThemedText>
           </ThemedView>
         </ThemedView>
 
         <ThemedView style={styles.section}>
-          <TouchableOpacity style={styles.dangerOption} onPress={handleClearAll}>
-            <ThemedText style={styles.dangerText}>Clear All Data</ThemedText>
+          <TouchableOpacity style={[styles.dangerOption, { backgroundColor: colors.dangerBackground }]} onPress={handleClearAll}>
+            <ThemedText style={[styles.dangerText, { color: colors.danger }]}>Clear All Data</ThemedText>
           </TouchableOpacity>
         </ThemedView>
       </ScrollView>
@@ -181,7 +236,28 @@ const styles = StyleSheet.create({
   option: {
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e2e8f0',
+  },
+  themeOptions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 8,
+  },
+  themeButton: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  themeButtonActive: {
+  },
+  themeButtonText: {
+    fontSize: 14,
+  },
+  themeButtonTextActive: {
+    color: '#fff',
+    fontWeight: '600',
   },
   optionWithSwitch: {
     flexDirection: 'row',
@@ -203,10 +279,8 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     borderRadius: 8,
-    backgroundColor: '#fef2f2',
   },
   dangerText: {
-    color: '#ef4444',
     fontSize: 16,
     fontWeight: '600',
   },

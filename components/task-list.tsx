@@ -4,6 +4,8 @@ import { Task } from '@/types/gtd';
 import { TaskItem } from './task-item';
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 interface TaskListProps {
   tasks: Task[];
@@ -14,6 +16,9 @@ interface TaskListProps {
 }
 
 export function TaskList({ tasks, onTaskPress, onToggleComplete, emptyMessage, scrollable = true }: TaskListProps) {
+  const colorScheme = useColorScheme() ?? 'light';
+  const colors = Colors[colorScheme];
+
   if (tasks.length === 0) {
     return (
       <ThemedView style={styles.emptyContainer}>
@@ -34,7 +39,7 @@ export function TaskList({ tasks, onTaskPress, onToggleComplete, emptyMessage, s
               onPress={() => onTaskPress(item)}
               onToggleComplete={() => onToggleComplete(item.id)}
             />
-            {index < tasks.length - 1 && <View style={styles.separator} />}
+            {index < tasks.length - 1 && <View style={[styles.separator, { backgroundColor: colors.border }]} />}
           </React.Fragment>
         ))}
       </ThemedView>
@@ -52,7 +57,7 @@ export function TaskList({ tasks, onTaskPress, onToggleComplete, emptyMessage, s
           onToggleComplete={() => onToggleComplete(item.id)}
         />
       )}
-      ItemSeparatorComponent={() => <View style={styles.separator} />}
+      ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: colors.border }]} />}
       contentContainerStyle={styles.list}
     />
   );
@@ -64,7 +69,6 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: '#e2e8f0',
     marginHorizontal: 16,
   },
   emptyContainer: {

@@ -5,10 +5,14 @@ import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { Task, Priority, TaskStatus, Project, Tag } from '@/types/gtd';
 import { taskService, projectService, tagService } from '@/services';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TaskDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const isNew = id === 'new';
+  const colorScheme = useColorScheme() ?? 'light';
+  const colors = Colors[colorScheme];
   
   const [task, setTask] = useState<Partial<Task>>({
     title: '',
@@ -122,44 +126,52 @@ export default function TaskDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ThemedView style={styles.header}>
+      <ThemedView style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()}>
-          <ThemedText style={styles.cancelButton}>Cancel</ThemedText>
+          <ThemedText style={[styles.cancelButton, { color: colors.subtitle }]}>Cancel</ThemedText>
         </TouchableOpacity>
         <ThemedText type="defaultSemiBold">{isNew ? 'New Task' : 'Edit Task'}</ThemedText>
         <TouchableOpacity onPress={handleSave}>
-          <ThemedText style={styles.saveButton}>Save</ThemedText>
+          <ThemedText style={[styles.saveButton, { color: colors.tint }]}>Save</ThemedText>
         </TouchableOpacity>
       </ThemedView>
 
       <ScrollView style={styles.scrollView}>
-        <ThemedView style={styles.section}>
+        <ThemedView style={[styles.section, { borderBottomColor: colors.border }]}>
           <ThemedText style={styles.label}>Title *</ThemedText>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { 
+              backgroundColor: colors.inputBackground, 
+              borderColor: colors.inputBorder,
+              color: colors.text
+            }]}
             value={task.title}
             onChangeText={(text) => setTask({ ...task, title: text })}
             placeholder="Enter task title"
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={colors.placeholder}
             autoFocus={isNew}
           />
         </ThemedView>
 
-        <ThemedView style={styles.section}>
+        <ThemedView style={[styles.section, { borderBottomColor: colors.border }]}>
           <ThemedText style={styles.label}>Description</ThemedText>
           <TextInput
-            style={[styles.input, styles.textArea]}
+            style={[styles.input, styles.textArea, { 
+              backgroundColor: colors.inputBackground, 
+              borderColor: colors.inputBorder,
+              color: colors.text
+            }]}
             value={task.description}
             onChangeText={(text) => setTask({ ...task, description: text })}
             placeholder="Add description"
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={colors.placeholder}
             multiline
             numberOfLines={4}
             textAlignVertical="top"
           />
         </ThemedView>
 
-        <ThemedView style={styles.section}>
+        <ThemedView style={[styles.section, { borderBottomColor: colors.border }]}>
           <ThemedText style={styles.label}>Priority</ThemedText>
           <ThemedView style={styles.priorityContainer}>
             {(['high', 'medium', 'low'] as Priority[]).map((priority) => (
@@ -167,7 +179,8 @@ export default function TaskDetailScreen() {
                 key={priority}
                 style={[
                   styles.priorityButton,
-                  task.priority === priority && styles.priorityButtonActive,
+                  { borderColor: colors.border },
+                  task.priority === priority && [styles.priorityButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }],
                 ]}
                 onPress={() => setTask({ ...task, priority })}
               >
@@ -182,7 +195,7 @@ export default function TaskDetailScreen() {
               </TouchableOpacity>
             ))}
             <TouchableOpacity
-              style={styles.priorityButton}
+              style={[styles.priorityButton, { borderColor: colors.border }]}
               onPress={() => setTask({ ...task, priority: undefined })}
             >
               <ThemedText style={styles.priorityText}>None</ThemedText>
@@ -190,29 +203,29 @@ export default function TaskDetailScreen() {
           </ThemedView>
         </ThemedView>
 
-        <ThemedView style={styles.section}>
+        <ThemedView style={[styles.section, { borderBottomColor: colors.border }]}>
           <ThemedText style={styles.label}>Due Date</ThemedText>
           <ThemedView style={styles.dateContainer}>
             <TouchableOpacity
-              style={styles.dateButton}
+              style={[styles.dateButton, { borderColor: colors.border }]}
               onPress={() => setDueDate(0)}
             >
               <ThemedText style={styles.dateButtonText}>Today</ThemedText>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.dateButton}
+              style={[styles.dateButton, { borderColor: colors.border }]}
               onPress={() => setDueDate(1)}
             >
               <ThemedText style={styles.dateButtonText}>Tomorrow</ThemedText>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.dateButton}
+              style={[styles.dateButton, { borderColor: colors.border }]}
               onPress={() => setDueDate(7)}
             >
               <ThemedText style={styles.dateButtonText}>Next Week</ThemedText>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.dateButton}
+              style={[styles.dateButton, { borderColor: colors.border }]}
               onPress={() => setDueDate(null)}
             >
               <ThemedText style={styles.dateButtonText}>Clear</ThemedText>
@@ -225,7 +238,7 @@ export default function TaskDetailScreen() {
           )}
         </ThemedView>
 
-        <ThemedView style={styles.section}>
+        <ThemedView style={[styles.section, { borderBottomColor: colors.border }]}>
           <ThemedText style={styles.label}>Status</ThemedText>
           <ThemedView style={styles.statusContainer}>
             {(['inbox', 'next', 'waiting', 'someday'] as TaskStatus[]).map((status) => (
@@ -233,7 +246,8 @@ export default function TaskDetailScreen() {
                 key={status}
                 style={[
                   styles.statusButton,
-                  task.status === status && styles.statusButtonActive,
+                  { borderColor: colors.border },
+                  task.status === status && [styles.statusButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }],
                 ]}
                 onPress={() => setTask({ ...task, status })}
               >
@@ -250,37 +264,39 @@ export default function TaskDetailScreen() {
           </ThemedView>
         </ThemedView>
 
-        <ThemedView style={styles.section}>
+        <ThemedView style={[styles.section, { borderBottomColor: colors.border }]}>
           <ThemedText style={styles.label}>Project</ThemedText>
           <ThemedView style={styles.projectContainer}>
             <TouchableOpacity
               style={[
                 styles.projectButton,
-                !task.projectId && styles.projectButtonActive,
+                { borderColor: colors.border },
+                !task.projectId && [styles.projectButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }],
               ]}
               onPress={() => setTask({ ...task, projectId: undefined })}
             >
-              <ThemedText style={styles.projectText}>None</ThemedText>
+              <ThemedText style={[styles.projectText, !task.projectId && styles.projectTextActive]}>None</ThemedText>
             </TouchableOpacity>
             {projects.map((project) => (
               <TouchableOpacity
                 key={project.id}
                 style={[
                   styles.projectButton,
-                  task.projectId === project.id && styles.projectButtonActive,
+                  { borderColor: colors.border },
+                  task.projectId === project.id && [styles.projectButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }],
                 ]}
                 onPress={() => setTask({ ...task, projectId: project.id })}
               >
-                <ThemedText style={styles.projectText}>{project.name}</ThemedText>
+                <ThemedText style={[styles.projectText, task.projectId === project.id && styles.projectTextActive]}>{project.name}</ThemedText>
               </TouchableOpacity>
             ))}
           </ThemedView>
         </ThemedView>
 
         {!isNew && (
-          <ThemedView style={styles.section}>
-            <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-              <ThemedText style={styles.deleteButtonText}>Delete Task</ThemedText>
+          <ThemedView style={[styles.section, { borderBottomColor: colors.border }]}>
+            <TouchableOpacity style={[styles.deleteButton, { backgroundColor: colors.dangerBackground }]} onPress={handleDelete}>
+              <ThemedText style={[styles.deleteButtonText, { color: colors.danger }]}>Delete Task</ThemedText>
             </TouchableOpacity>
           </ThemedView>
         )}
@@ -302,13 +318,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e2e8f0',
   },
   cancelButton: {
-    color: '#64748b',
+    fontWeight: '400',
   },
   saveButton: {
-    color: '#0a7ea4',
     fontWeight: '600',
   },
   scrollView: {
@@ -318,7 +332,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e2e8f0',
   },
   label: {
     fontSize: 14,
@@ -331,7 +344,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
     borderRadius: 8,
     minHeight: 44,
   },
@@ -349,11 +361,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
   },
   priorityButtonActive: {
-    backgroundColor: '#0a7ea4',
-    borderColor: '#0a7ea4',
   },
   priorityText: {
     fontSize: 14,
@@ -372,7 +381,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
   },
   dateButtonText: {
     fontSize: 14,
@@ -392,11 +400,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
   },
   statusButtonActive: {
-    backgroundColor: '#0a7ea4',
-    borderColor: '#0a7ea4',
   },
   statusText: {
     fontSize: 14,
@@ -415,23 +420,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
   },
   projectButtonActive: {
-    backgroundColor: '#0a7ea4',
-    borderColor: '#0a7ea4',
   },
   projectText: {
     fontSize: 14,
   },
+  projectTextActive: {
+    color: '#fff',
+    fontWeight: '600',
+  },
   deleteButton: {
     paddingVertical: 16,
     borderRadius: 8,
-    backgroundColor: '#fef2f2',
     alignItems: 'center',
   },
   deleteButtonText: {
-    color: '#ef4444',
     fontSize: 16,
     fontWeight: '600',
   },
