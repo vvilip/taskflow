@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, SafeAreaView, Alert, ScrollView } from 'react-native';
+import { StyleSheet, Alert, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
@@ -10,8 +11,6 @@ import { taskService } from '@/services';
 
 export default function TodayScreen() {
   const [todayTasks, setTodayTasks] = useState<Task[]>([]);
-  const [tomorrowTasks, setTomorrowTasks] = useState<Task[]>([]);
-  const [overdueTasks, setOverdueTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
 
   useFocusEffect(
@@ -22,15 +21,8 @@ export default function TodayScreen() {
 
   const loadTasks = async () => {
     try {
-      const [today, tomorrow, overdue] = await Promise.all([
-        taskService.getTodayTasks(),
-        taskService.getTomorrowTasks(),
-        taskService.getOverdueTasks(),
-      ]);
-      
+      const today = await taskService.getTodayTasks();
       setTodayTasks(today);
-      setTomorrowTasks(tomorrow);
-      setOverdueTasks(overdue);
     } catch (error) {
       Alert.alert('Error', 'Failed to load tasks');
     } finally {
@@ -40,8 +32,7 @@ export default function TodayScreen() {
 
   const handleToggleComplete = async (taskId: string) => {
     try {
-      const allTasks = [...overdueTasks, ...todayTasks, ...tomorrowTasks];
-      const task = allTasks.find(t => t.id === taskId);
+      const task = todayTasks.find(t => t.id === taskId);
       if (!task) return;
 
       if (task.completed) {
@@ -61,75 +52,46 @@ export default function TodayScreen() {
   };
 
   const handleAddTask = () => {
-    router.push('/task/new');
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    router.push({
+      pathname: '/task/new',
+      params: { dueDate: today.getTime().toString() },
+    });
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title">Today</ThemedText>
-        <ThemedText style={styles.date}>
-          {new Date().toLocaleDateString('de-DE', { 
-            weekday: 'long', 
-            day: 'numeric', 
-            month: 'long' 
-          })}
-        </ThemedText>
-      </ThemedView>
-      
-      <ScrollView style={styles.scrollView}>
-        {overdueTasks.length > 0 && (
-          <ThemedView style={styles.section}>
-            <ThemedText type="subtitle" style={styles.overdueTitle}>⚠️ Overdue</ThemedText>
-            <TaskList
-              tasks={overdueTasks}
-              onTaskPress={handleTaskPress}
-              onToggleComplete={handleToggleComplete}
-              scrollable={false}
-            />
-          </ThemedView>
-        )}
-
-        {todayTasks.length > 0 && (
-          <ThemedView style={styles.section}>
-            <ThemedText type="subtitle">Today</ThemedText>
-            <TaskList
-              tasks={todayTasks}
-              onTaskPress={handleTaskPress}
-              onToggleComplete={handleToggleComplete}
-              scrollable={false}
-            />
-          </ThemedView>
-        )}
-
-        {tomorrowTasks.length > 0 && (
-          <ThemedView style={styles.section}>
-            <ThemedText type="subtitle">Tomorrow</ThemedText>
-            <TaskList
-              tasks={tomorrowTasks}
-              onTaskPress={handleTaskPress}
-              onToggleComplete={handleToggleComplete}
-              scrollable={false}
-            />
-          </ThemedView>
-        )}
-
-        {overdueTasks.length === 0 && todayTasks.length === 0 && tomorrowTasks.length === 0 && (
-          <ThemedView style={styles.emptyContainer}>
-            <ThemedText style={styles.emptyText}>
-              ☀️ All clear! No scheduled tasks.
-            </ThemedText>
-          </ThemedView>
-        )}
-      </ScrollView>
-      
-      <FabButton onPress={handleAddTask} />
-    </SafeAreaView>
+    <ThemedView style={styles.container}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <ThemedView style={styles.header}>
+          <ThemedText type="title">Today</ThemedText>
+          <ThemedText style={styles.date}>
+            {new Date().toLocaleDateString('de-DE', { 
+              weekday: 'long', 
+              day: 'numeric', 
+              month: 'long' 
+            })}
+          </ThemedText>
+        </ThemedView>
+        
+        <TaskList
+          tasks={todayTasks}
+          onTaskPress={handleTaskPress}
+          onToggleComplete={handleToggleComplete}
+          emptyMessage="☀️ No tasks for today!"
+        />
+        
+        <FabButton onPress={handleAddTask} />
+      </SafeAreaView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  safeArea: {
     flex: 1,
   },
   header: {
@@ -141,25 +103,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     opacity: 0.6,
     marginTop: 4,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  section: {
-    marginBottom: 24,
-  },
-  overdueTitle: {
-    color: '#ef4444',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 60,
-  },
-  emptyText: {
-    fontSize: 16,
-    opacity: 0.5,
-    textAlign: 'center',
   },
 });

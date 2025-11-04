@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, SafeAreaView, Alert, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Alert, TouchableOpacity, ScrollView, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
@@ -64,70 +65,75 @@ export default function InboxScreen() {
   const colors = Colors[colorScheme];
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title">Inbox</ThemedText>
-        <ThemedText style={styles.count}>{tasks.length} tasks</ThemedText>
-      </ThemedView>
+    <ThemedView style={styles.container}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <ThemedView style={styles.header}>
+          <ThemedText type="title">Inbox</ThemedText>
+          <ThemedText style={styles.count}>{tasks.length} tasks</ThemedText>
+        </ThemedView>
 
-      <ThemedView style={styles.filterContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
-          <TouchableOpacity
-            style={[
-              styles.filterButton,
-              { borderColor: colors.border },
-              statusFilter === 'all' && [styles.filterButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }],
-            ]}
-            onPress={() => setStatusFilter('all')}
-          >
-            <ThemedText style={[
-              styles.filterText,
-              statusFilter === 'all' && styles.filterTextActive,
-            ]}>All</ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.filterButton,
-              { borderColor: colors.border },
-              statusFilter === 'waiting' && [styles.filterButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }],
-            ]}
-            onPress={() => setStatusFilter('waiting')}
-          >
-            <ThemedText style={[
-              styles.filterText,
-              statusFilter === 'waiting' && styles.filterTextActive,
-            ]}>⏳ Waiting</ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.filterButton,
-              { borderColor: colors.border },
-              statusFilter === 'someday' && [styles.filterButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }],
-            ]}
-            onPress={() => setStatusFilter('someday')}
-          >
-            <ThemedText style={[
-              styles.filterText,
-              statusFilter === 'someday' && styles.filterTextActive,
-            ]}>💭 Someday</ThemedText>
-          </TouchableOpacity>
-        </ScrollView>
-      </ThemedView>
-      
-      <TaskList
-        tasks={tasks}
-        onTaskPress={handleTaskPress}
-        onToggleComplete={handleToggleComplete}
-        emptyMessage="🎉 Inbox is empty!"
-      />
-      
-      <FabButton onPress={handleAddTask} />
-    </SafeAreaView>
+        <ThemedView style={styles.filterContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
+            <TouchableOpacity
+              style={[
+                styles.filterButton,
+                { borderColor: colors.border },
+                statusFilter === 'all' && [styles.filterButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }],
+              ]}
+              onPress={() => setStatusFilter('all')}
+            >
+              <ThemedText style={[
+                styles.filterText,
+                statusFilter === 'all' && styles.filterTextActive,
+              ]}>All</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.filterButton,
+                { borderColor: colors.border },
+                statusFilter === 'waiting' && [styles.filterButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }],
+              ]}
+              onPress={() => setStatusFilter('waiting')}
+            >
+              <ThemedText style={[
+                styles.filterText,
+                statusFilter === 'waiting' && styles.filterTextActive,
+              ]}>⏳ Waiting</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.filterButton,
+                { borderColor: colors.border },
+                statusFilter === 'someday' && [styles.filterButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }],
+              ]}
+              onPress={() => setStatusFilter('someday')}
+            >
+              <ThemedText style={[
+                styles.filterText,
+                statusFilter === 'someday' && styles.filterTextActive,
+              ]}>💭 Someday</ThemedText>
+            </TouchableOpacity>
+          </ScrollView>
+        </ThemedView>
+        
+        <TaskList
+          tasks={tasks}
+          onTaskPress={handleTaskPress}
+          onToggleComplete={handleToggleComplete}
+          emptyMessage="🎉 Inbox is empty!"
+        />
+        
+        <FabButton onPress={handleAddTask} />
+      </SafeAreaView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  safeArea: {
     flex: 1,
   },
   header: {
@@ -142,6 +148,7 @@ const styles = StyleSheet.create({
   },
   filterContainer: {
     paddingVertical: 8,
+    paddingBottom: 4,
   },
   filterScroll: {
     paddingHorizontal: 16,

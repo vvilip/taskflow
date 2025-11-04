@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, SafeAreaView, Alert, TouchableOpacity, FlatList, View } from 'react-native';
+import { StyleSheet, Alert, TouchableOpacity, FlatList, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
@@ -71,37 +72,42 @@ export default function ProjectsScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title">Projects</ThemedText>
-        <ThemedText style={styles.count}>{projects.length} projects</ThemedText>
-      </ThemedView>
-      
-      {projects.length === 0 ? (
-        <ThemedView style={styles.emptyContainer}>
-          <ThemedText style={styles.emptyText}>
-            📁 No projects yet
-          </ThemedText>
-          <ThemedText style={styles.emptySubtext}>
-            Create a project to organize your tasks
-          </ThemedText>
+    <ThemedView style={styles.container}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <ThemedView style={styles.header}>
+          <ThemedText type="title">Projects</ThemedText>
+          <ThemedText style={styles.count}>{projects.length} projects</ThemedText>
         </ThemedView>
-      ) : (
-        <FlatList
-          data={projects}
-          keyExtractor={(item) => item.id}
-          renderItem={renderProject}
-          contentContainerStyle={styles.list}
-        />
-      )}
-      
-      <FabButton onPress={handleAddProject} />
-    </SafeAreaView>
+        
+        {projects.length === 0 ? (
+          <ThemedView style={styles.emptyContainer}>
+            <ThemedText style={styles.emptyText}>
+              📁 No projects yet
+            </ThemedText>
+            <ThemedText style={styles.emptySubtext}>
+              Create a project to organize your tasks
+            </ThemedText>
+          </ThemedView>
+        ) : (
+          <FlatList
+            data={projects}
+            keyExtractor={(item) => item.id}
+            renderItem={renderProject}
+            contentContainerStyle={styles.list}
+          />
+        )}
+        
+        <FabButton onPress={handleAddProject} />
+      </SafeAreaView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  safeArea: {
     flex: 1,
   },
   header: {

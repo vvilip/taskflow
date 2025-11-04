@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, SafeAreaView, Alert, ScrollView, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Alert, ScrollView, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
@@ -161,19 +162,21 @@ export default function CalendarScreen() {
           ]}
           onPress={() => handleDateSelect(day)}
         >
-          <ThemedText style={[
-            styles.dayText,
-            isSelected && styles.selectedDayText,
-          ]}>
-            {day}
-          </ThemedText>
-          {taskCount > 0 && (
-            <View style={[styles.taskBadge, { backgroundColor: isSelected ? '#fff' : colors.tint }]}>
-              <ThemedText style={[styles.taskBadgeText, { color: isSelected ? colors.tint : '#fff' }]}>
-                {taskCount}
-              </ThemedText>
-            </View>
-          )}
+          <View style={styles.dayCellContent}>
+            <ThemedText style={[
+              styles.dayText,
+              isSelected && styles.selectedDayText,
+            ]}>
+              {day}
+            </ThemedText>
+            {taskCount > 0 && (
+              <View style={[styles.taskBadge, { backgroundColor: isSelected ? '#fff' : colors.tint }]}>
+                <ThemedText style={[styles.taskBadgeText, { color: isSelected ? colors.tint : '#fff' }]}>
+                  {taskCount}
+                </ThemedText>
+              </View>
+            )}
+          </View>
         </TouchableOpacity>
       );
     }
@@ -187,12 +190,13 @@ export default function CalendarScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title">Calendar</ThemedText>
-      </ThemedView>
+    <ThemedView style={styles.container}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <ThemedView style={styles.header}>
+          <ThemedText type="title">Calendar</ThemedText>
+        </ThemedView>
 
-      <ThemedView style={styles.monthSelector}>
+        <ThemedView style={styles.monthSelector}>
         <TouchableOpacity onPress={handlePrevMonth}>
           <ThemedText style={[styles.monthButton, { color: colors.tint }]}>←</ThemedText>
         </TouchableOpacity>
@@ -226,12 +230,16 @@ export default function CalendarScreen() {
       </ScrollView>
 
       <FabButton onPress={handleAddTask} />
-    </SafeAreaView>
+      </SafeAreaView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  safeArea: {
     flex: 1,
   },
   header: {
@@ -279,9 +287,12 @@ const styles = StyleSheet.create({
   dayCell: {
     width: `${100 / 7}%`,
     aspectRatio: 1,
+    padding: 4,
+  },
+  dayCellContent: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 4,
     position: 'relative',
   },
   today: {
@@ -293,6 +304,7 @@ const styles = StyleSheet.create({
   },
   dayText: {
     fontSize: 16,
+    textAlign: 'center',
   },
   selectedDayText: {
     color: '#fff',
@@ -300,18 +312,20 @@ const styles = StyleSheet.create({
   },
   taskBadge: {
     position: 'absolute',
-    top: 4,
-    right: 4,
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
+    top: 2,
+    right: 2,
+    minWidth: 16,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 4,
   },
   taskBadgeText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: 'bold',
+    lineHeight: 9,
+    includeFontPadding: false,
   },
   tasksSection: {
     marginTop: 24,

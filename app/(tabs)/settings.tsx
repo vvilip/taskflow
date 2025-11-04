@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, SafeAreaView, Alert, TouchableOpacity, ScrollView, Switch } from 'react-native';
+import { StyleSheet, Alert, TouchableOpacity, ScrollView, Switch } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { storageService, taskService } from '@/services';
@@ -85,12 +86,13 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title">Settings</ThemedText>
-      </ThemedView>
-      
-      <ScrollView style={styles.scrollView}>
+    <ThemedView style={styles.container}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <ThemedView style={styles.header}>
+          <ThemedText type="title">Settings</ThemedText>
+        </ThemedView>
+        
+        <ScrollView style={styles.scrollView}>
         <ThemedView style={styles.section}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>Appearance</ThemedText>
           
@@ -210,12 +212,16 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </ThemedView>
       </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  safeArea: {
     flex: 1,
   },
   header: {
