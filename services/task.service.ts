@@ -32,8 +32,7 @@ class TaskService {
     return tasks.filter(task => 
       task.status === 'inbox' && 
       !task.completed && 
-      !task.dueDate &&
-      !task.projectId
+      !task.dueDate
     );
   }
 
@@ -161,9 +160,9 @@ class TaskService {
       updatedAt: Date.now(),
     };
 
-    // Auto-move out of inbox when task gets processed
+    // Auto-move out of inbox only when task gets a due date or status change
     if (currentTask.status === 'inbox') {
-      if (updates.dueDate || updates.projectId || (updates.status && updates.status !== 'inbox')) {
+      if (updates.dueDate || (updates.status && updates.status !== 'inbox')) {
         updatedTask.status = updates.status || 'next';
       }
     }
