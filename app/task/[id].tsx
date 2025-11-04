@@ -9,7 +9,11 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TaskDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, dueDate: dueDateParam, projectId: projectIdParam } = useLocalSearchParams<{ 
+    id: string;
+    dueDate?: string;
+    projectId?: string;
+  }>();
   const isNew = id === 'new';
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
@@ -19,8 +23,8 @@ export default function TaskDetailScreen() {
     description: '',
     status: 'inbox',
     priority: undefined,
-    dueDate: undefined,
-    projectId: undefined,
+    dueDate: dueDateParam ? parseInt(dueDateParam) : undefined,
+    projectId: projectIdParam,
     tagIds: [],
     completed: false,
   });
