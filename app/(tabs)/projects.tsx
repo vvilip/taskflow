@@ -50,7 +50,7 @@ export default function ProjectsScreen() {
       onPress={() => handleProjectPress(item)}
       activeOpacity={0.7}
     >
-      <ThemedView style={styles.projectContent}>
+      <View style={styles.projectContent}>
         {item.color && (
           <View style={[styles.colorIndicator, { backgroundColor: item.color }]} />
         )}
@@ -67,27 +67,27 @@ export default function ProjectsScreen() {
             {taskCounts[item.id] || 0} tasks
           </ThemedText>
         </View>
-      </ThemedView>
+      </View>
     </TouchableOpacity>
   );
 
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <ThemedView style={styles.header}>
+        <View style={styles.header}>
           <ThemedText type="title">Projects</ThemedText>
           <ThemedText style={styles.count}>{projects.length} projects</ThemedText>
-        </ThemedView>
+        </View>
         
         {projects.length === 0 ? (
-          <ThemedView style={styles.emptyContainer}>
+          <View style={styles.emptyContainer}>
             <ThemedText style={styles.emptyText}>
               📁 No projects yet
             </ThemedText>
             <ThemedText style={styles.emptySubtext}>
               Create a project to organize your tasks
             </ThemedText>
-          </ThemedView>
+          </View>
         ) : (
           <FlatList
             data={projects}
@@ -122,12 +122,14 @@ const styles = StyleSheet.create({
   },
   list: {
     padding: 16,
-    gap: 12,
+    paddingBottom: 100,
   },
   projectCard: {
     borderRadius: 12,
-    overflow: 'hidden',
+    backgroundColor: '#f8fafc',
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
   projectContent: {
     flexDirection: 'row',
@@ -135,8 +137,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   colorIndicator: {
-    width: 4,
-    borderRadius: 2,
+    width: 6,
+    borderRadius: 3,
   },
   projectInfo: {
     flex: 1,

@@ -24,11 +24,17 @@ export default function InboxScreen() {
 
   const loadTasks = async () => {
     try {
-      const inboxTasks = await taskService.getInboxTasks();
-      const filtered = statusFilter === 'all' 
-        ? inboxTasks 
-        : inboxTasks.filter(t => t.status === statusFilter);
-      setTasks(filtered);
+      if (statusFilter === 'someday') {
+        const allTasks = await taskService.getAllTasks();
+        const somedayTasks = allTasks.filter(t => !t.completed && t.status === 'someday');
+        setTasks(somedayTasks);
+      } else {
+        const inboxTasks = await taskService.getInboxTasks();
+        const filtered = statusFilter === 'all' 
+          ? inboxTasks 
+          : inboxTasks.filter(t => t.status === statusFilter);
+        setTasks(filtered);
+      }
     } catch (error) {
       Alert.alert('Error', 'Failed to load tasks');
     } finally {
