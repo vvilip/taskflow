@@ -31,7 +31,8 @@ class TaskService {
     const tasks = await this.getAllTasks();
     return tasks.filter(task => 
       !task.completed && 
-      !task.dueDate
+      !task.dueDate &&
+      task.status !== 'someday'
     );
   }
 

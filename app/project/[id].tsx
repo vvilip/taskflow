@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Alert, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { StyleSheet, Alert, ScrollView, TouchableOpacity, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { TaskList } from '@/components/task-list';
@@ -24,9 +24,11 @@ export default function ProjectDetailScreen() {
   const [isEditing, setIsEditing] = useState(isNew);
   const [loading, setLoading] = useState(!isNew);
 
-  useEffect(() => {
-    loadData();
-  }, [id]);
+  useFocusEffect(
+    React.useCallback(() => {
+      loadData();
+    }, [id])
+  );
 
   const loadData = async () => {
     try {
@@ -138,26 +140,27 @@ export default function ProjectDetailScreen() {
   const colors = ['#0a7ea4', '#ef4444', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899', '#64748b'];
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <ThemedText style={styles.backButton}>Back</ThemedText>
-        </TouchableOpacity>
-        {isEditing ? (
-          <TouchableOpacity onPress={handleSave}>
-            <ThemedText style={styles.saveButton}>Save</ThemedText>
+    <ThemedView style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <ThemedText style={styles.backButton}>Back</ThemedText>
           </TouchableOpacity>
-        ) : (
-          <TouchableOpacity onPress={() => setIsEditing(true)}>
-            <ThemedText style={styles.editButton}>Edit</ThemedText>
-          </TouchableOpacity>
-        )}
-      </ThemedView>
+          {isEditing ? (
+            <TouchableOpacity onPress={handleSave}>
+              <ThemedText style={styles.saveButton}>Save</ThemedText>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity onPress={() => setIsEditing(true)}>
+              <ThemedText style={styles.editButton}>Edit</ThemedText>
+            </TouchableOpacity>
+          )}
+        </View>
 
-      <ScrollView style={styles.scrollView}>
+        <ScrollView style={styles.scrollView}>
         {isEditing ? (
           <>
-            <ThemedView style={styles.section}>
+            <View style={styles.section}>
               <ThemedText style={styles.label}>Project Name *</ThemedText>
               <TextInput
                 style={styles.input}
@@ -167,9 +170,9 @@ export default function ProjectDetailScreen() {
                 placeholderTextColor="#94a3b8"
                 autoFocus={isNew}
               />
-            </ThemedView>
+            </View>
 
-            <ThemedView style={styles.section}>
+            <View style={styles.section}>
               <ThemedText style={styles.label}>Description</ThemedText>
               <TextInput
                 style={[styles.input, styles.textArea]}
@@ -181,9 +184,9 @@ export default function ProjectDetailScreen() {
                 numberOfLines={3}
                 textAlignVertical="top"
               />
-            </ThemedView>
+            </View>
 
-            <ThemedView style={styles.section}>
+            <View style={styles.section}>
               <ThemedText style={styles.label}>Goal</ThemedText>
               <TextInput
                 style={[styles.input, styles.textArea]}
@@ -195,11 +198,11 @@ export default function ProjectDetailScreen() {
                 numberOfLines={3}
                 textAlignVertical="top"
               />
-            </ThemedView>
+            </View>
 
-            <ThemedView style={styles.section}>
+            <View style={styles.section}>
               <ThemedText style={styles.label}>Color</ThemedText>
-              <ThemedView style={styles.colorContainer}>
+              <View style={styles.colorContainer}>
                 {colors.map((color) => (
                   <TouchableOpacity
                     key={color}
@@ -211,11 +214,11 @@ export default function ProjectDetailScreen() {
                     onPress={() => setProject({ ...project, color })}
                   />
                 ))}
-              </ThemedView>
-            </ThemedView>
+              </View>
+            </View>
 
             {!isNew && (
-              <ThemedView style={styles.section}>
+              <View style={styles.section}>
                 <TouchableOpacity style={styles.archiveButton} onPress={handleArchive}>
                   <ThemedText style={styles.archiveButtonText}>
                     {project.archived ? 'Unarchive Project' : 'Archive Project'}
@@ -225,46 +228,46 @@ export default function ProjectDetailScreen() {
                 <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
                   <ThemedText style={styles.deleteButtonText}>Delete Project</ThemedText>
                 </TouchableOpacity>
-              </ThemedView>
+              </View>
             )}
           </>
         ) : (
           <>
-            <ThemedView style={styles.projectHeader}>
-              <ThemedView style={styles.projectTitleContainer}>
+            <View style={styles.projectHeader}>
+              <View style={styles.projectTitleContainer}>
                 {project.color && (
-                  <ThemedView style={[styles.colorIndicator, { backgroundColor: project.color }]} />
+                  <View style={[styles.colorIndicator, { backgroundColor: project.color }]} />
                 )}
                 <ThemedText type="title">{project.name}</ThemedText>
-              </ThemedView>
+              </View>
               {project.archived && (
-                <ThemedView style={styles.archivedBadge}>
+                <View style={styles.archivedBadge}>
                   <ThemedText style={styles.archivedText}>Archived</ThemedText>
-                </ThemedView>
+                </View>
               )}
-            </ThemedView>
+            </View>
 
             {project.description && (
-              <ThemedView style={styles.infoSection}>
+              <View style={styles.infoSection}>
                 <ThemedText style={styles.infoLabel}>Description</ThemedText>
                 <ThemedText style={styles.infoText}>{project.description}</ThemedText>
-              </ThemedView>
+              </View>
             )}
 
             {project.goal && (
-              <ThemedView style={styles.infoSection}>
+              <View style={styles.infoSection}>
                 <ThemedText style={styles.infoLabel}>Goal</ThemedText>
                 <ThemedText style={styles.infoText}>{project.goal}</ThemedText>
-              </ThemedView>
+              </View>
             )}
 
-            <ThemedView style={styles.tasksSection}>
-              <ThemedView style={styles.tasksSectionHeader}>
+            <View style={styles.tasksSection}>
+              <View style={styles.tasksSectionHeader}>
                 <ThemedText type="subtitle">Tasks</ThemedText>
                 <TouchableOpacity onPress={handleAddTask}>
                   <ThemedText style={styles.addTaskButton}>+ Add Task</ThemedText>
                 </TouchableOpacity>
-              </ThemedView>
+              </View>
               
               <TaskList
                 tasks={tasks}
@@ -273,18 +276,22 @@ export default function ProjectDetailScreen() {
                 emptyMessage="No tasks in this project yet"
                 scrollable={false}
               />
-            </ThemedView>
+            </View>
           </>
         )}
 
-        <ThemedView style={styles.bottomPadding} />
+        <View style={styles.bottomPadding} />
       </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  safeArea: {
     flex: 1,
   },
   header: {
@@ -315,6 +322,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#e2e8f0',
+    backgroundColor: 'transparent',
   },
   label: {
     fontSize: 14,
@@ -339,6 +347,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     flexWrap: 'wrap',
+    backgroundColor: 'transparent',
   },
   colorButton: {
     width: 40,
@@ -381,11 +390,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 24,
     paddingBottom: 16,
+    backgroundColor: 'transparent',
   },
   projectTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    backgroundColor: 'transparent',
   },
   colorIndicator: {
     width: 6,
@@ -408,6 +419,7 @@ const styles = StyleSheet.create({
   infoSection: {
     paddingHorizontal: 16,
     paddingVertical: 12,
+    backgroundColor: 'transparent',
   },
   infoLabel: {
     fontSize: 12,
@@ -422,6 +434,7 @@ const styles = StyleSheet.create({
   },
   tasksSection: {
     marginTop: 24,
+    backgroundColor: 'transparent',
   },
   tasksSectionHeader: {
     flexDirection: 'row',
@@ -429,6 +442,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 8,
+    backgroundColor: 'transparent',
   },
   addTaskButton: {
     color: '#0a7ea4',
@@ -436,5 +450,6 @@ const styles = StyleSheet.create({
   },
   bottomPadding: {
     height: 40,
+    backgroundColor: 'transparent',
   },
 });
