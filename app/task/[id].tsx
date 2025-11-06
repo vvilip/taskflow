@@ -9,6 +9,7 @@ import { Task, Priority, TaskStatus, Project, Tag } from '@/types/gtd';
 import { taskService, projectService, tagService } from '@/services';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { parseTaskTitle } from '@/utils/date-parser';
 
 export default function TaskDetailScreen() {
   const { id, dueDate: dueDateParam, projectId: projectIdParam } = useLocalSearchParams<{ 
@@ -165,6 +166,28 @@ export default function TaskDetailScreen() {
     setShowDatePicker(true);
   };
 
+  const handleTitleChange = (text: string) => {
+    // Only parse if the text ends with a space (user finished typing a word)
+    const shouldParse = text.endsWith(' ');
+    
+    if (shouldParse && text.trim()) {
+      const parsed = parseTaskTitle(text.trim());
+      
+      // Only update if we actually found a date
+      if (parsed.detectedDate) {
+        setTask({ 
+          ...task, 
+          title: '', // Clear the field so user can type the actual task
+          dueDate: parsed.detectedDate,
+        });
+        return;
+      }
+    }
+    
+    // Otherwise just update the title
+    setTask({ ...task, title: text });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ThemedView style={[styles.header, { borderBottomColor: colors.border }]}>
@@ -187,7 +210,7 @@ export default function TaskDetailScreen() {
               color: colors.text
             }]}
             value={task.title}
-            onChangeText={(text) => setTask({ ...task, title: text })}
+            onChangeText={handleTitleChange}
             placeholder="Enter task title"
             placeholderTextColor={colors.placeholder}
             autoFocus={isNew}
