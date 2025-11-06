@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, Alert, ScrollView, TouchableOpacity, TextInput, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { Task, Priority, TaskStatus, Project, Tag } from '@/types/gtd';
@@ -33,6 +34,7 @@ export default function TaskDetailScreen() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(!isNew);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -150,6 +152,19 @@ export default function TaskDetailScreen() {
     setTask({ ...task, dueDate: newDate });
   };
 
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === 'ios');
+    
+    if (selectedDate) {
+      selectedDate.setHours(23, 59, 59, 999);
+      setTask({ ...task, dueDate: selectedDate.getTime() });
+    }
+  };
+
+  const openDatePicker = () => {
+    setShowDatePicker(true);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ThemedView style={[styles.header, { borderBottomColor: colors.border }]}>
@@ -265,11 +280,34 @@ export default function TaskDetailScreen() {
                 task.dueDate && isDueDateToday(task.dueDate, 7) && styles.dateButtonTextActive
               ]}>Next Week</ThemedText>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.dateButton, 
+                { borderColor: colors.border },
+              ]}
+              onPress={openDatePicker}
+            >
+              <ThemedText style={styles.dateButtonText}>📅 Pick Date</ThemedText>
+            </TouchableOpacity>
           </ThemedView>
           {task.dueDate && (
-            <ThemedText style={styles.selectedDate}>
-              📅 {formatDate(task.dueDate)}
-            </ThemedText>
+            <ThemedView style={styles.selectedDateContainer}>
+              <ThemedText style={styles.selectedDate}>
+                📅 {formatDate(task.dueDate)}
+              </ThemedText>
+              <TouchableOpacity onPress={() => setTask({ ...task, dueDate: undefined })}>
+                <ThemedText style={[styles.clearDateButton, { color: colors.danger }]}>Clear</ThemedText>
+              </TouchableOpacity>
+            </ThemedView>
+          )}
+          {showDatePicker && (
+            <DateTimePicker
+              value={task.dueDate ? new Date(task.dueDate) : new Date()}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={handleDateChange}
+              minimumDate={new Date()}
+            />
           )}
         </ThemedView>
 
@@ -417,9 +455,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   selectedDate: {
-    marginTop: 8,
     fontSize: 14,
     opacity: 0.6,
+    flex: 1,
+  },
+  selectedDateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  clearDateButton: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   statusContainer: {
     flexDirection: 'row',
