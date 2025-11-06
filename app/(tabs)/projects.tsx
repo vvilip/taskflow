@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 16,
     paddingTop: 16,
-    paddingBottom: 12,
+    paddingBottom: 20,
   },
   count: {
     fontSize: 14,
