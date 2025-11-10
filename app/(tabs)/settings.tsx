@@ -5,7 +5,7 @@ import { router, useFocusEffect } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
-import { storageService, taskService, webdavService } from '@/services';
+import { storageService, taskService, webdavService, notificationService } from '@/services';
 import { useTheme } from '@/contexts/theme-context';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -13,6 +13,8 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 export default function SettingsScreen() {
   const [syncing, setSyncing] = useState(false);
   const [autoArchive, setAutoArchive] = useState(false);
+  const [dailyNotifications, setDailyNotifications] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [webdavConfigured, setWebdavConfigured] = useState(false);
   const [webdavInfo, setWebdavInfo] = useState<{ url: string; username: string } | null>(null);
   const { themeMode, setThemeMode } = useTheme();
@@ -22,6 +24,7 @@ export default function SettingsScreen() {
   useFocusEffect(
     React.useCallback(() => {
       checkWebDAVStatus();
+      checkNotificationStatus();
     }, [])
   );
 
@@ -31,6 +34,15 @@ export default function SettingsScreen() {
     if (isConfigured) {
       setWebdavInfo(webdavService.getConfig());
     }
+  };
+
+  const checkNotificationStatus = async () => {
+    const enabled = await notificationService.isEnabled();
+    setNotificationsEnabled(enabled);
+    
+    // Check if there are scheduled notifications
+    const scheduled = await notificationService.getScheduledNotifications();
+    setDailyNotifications(scheduled.length > 0);
   };
 
   const handleExport = async () => {
@@ -187,6 +199,47 @@ export default function SettingsScreen() {
     );
   };
 
+  const handleToggleDailyNotifications = async (enabled: boolean) => {
+    if (enabled) {
+      const hasPermission = await notificationService.requestPermissions();
+      if (!hasPermission) {
+        Alert.alert(
+          'Permission Required',
+          'Please enable notifications in your device settings to receive daily task reminders.'
+        );
+        return;
+      }
+
+      const success = await notificationService.scheduleDailyNotificationWithCount();
+      if (success) {
+        setDailyNotifications(true);
+        setNotificationsEnabled(true);
+        Alert.alert(
+          'Notifications Enabled',
+          'You will receive a daily reminder at 12:00 PM'
+        );
+      }
+    } else {
+      await notificationService.cancelDailyNotification();
+      setDailyNotifications(false);
+      Alert.alert('Notifications Disabled', 'Daily reminders have been turned off');
+    }
+  };
+
+  const handleTestNotification = async () => {
+    const hasPermission = await notificationService.requestPermissions();
+    if (!hasPermission) {
+      Alert.alert(
+        'Permission Required',
+        'Please enable notifications in your device settings.'
+      );
+      return;
+    }
+
+    await notificationService.sendTestNotification();
+    Alert.alert('Test Sent', 'Check your notifications');
+  };
+
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -242,6 +295,37 @@ export default function SettingsScreen() {
               </TouchableOpacity>
             </ThemedView>
           </ThemedView>
+        </ThemedView>
+
+        <ThemedView style={styles.section}>
+          <ThemedText type="subtitle" style={styles.sectionTitle}>Notifications</ThemedText>
+          
+          <ThemedView style={[styles.option, { borderBottomColor: colors.border }]}>
+            <ThemedView style={styles.optionWithSwitch}>
+              <ThemedView style={styles.optionTextContainer}>
+                <ThemedText style={styles.optionText}>Daily Reminder</ThemedText>
+                <ThemedText style={styles.optionDescription}>
+                  Get notified daily at 12:00 PM
+                </ThemedText>
+              </ThemedView>
+              <Switch
+                value={dailyNotifications}
+                onValueChange={handleToggleDailyNotifications}
+              />
+            </ThemedView>
+          </ThemedView>
+
+          {dailyNotifications && (
+            <TouchableOpacity 
+              style={[styles.option, { borderBottomColor: colors.border }]} 
+              onPress={handleTestNotification}
+            >
+              <ThemedText style={styles.optionText}>Send Test Notification</ThemedText>
+              <ThemedText style={styles.optionDescription}>
+                Test your notification settings
+              </ThemedText>
+            </TouchableOpacity>
+          )}
         </ThemedView>
 
         <ThemedView style={styles.section}>

@@ -7,3 +7,4 @@ export { default as taskService } from './task.service';
 export { default as projectService } from './project.service';
 export { default as tagService } from './tag.service';
 export { default as webdavService } from './webdav.service';
+export { default as notificationService } from './notification.service';
