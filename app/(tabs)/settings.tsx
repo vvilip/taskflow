@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { StyleSheet, Alert, TouchableOpacity, ScrollView, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import * as DocumentPicker from 'expo-document-picker';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { storageService, taskService } from '@/services';
@@ -17,14 +19,65 @@ export default function SettingsScreen() {
 
   const handleExport = async () => {
     try {
-      const fileUri = await storageService.exportToFile();
+      await storageService.exportToFile();
       Alert.alert(
         'Export Successful',
-        `Data exported to:\n${fileUri}`,
+        'Your data has been exported as JSON. You can now save or share the file.',
         [{ text: 'OK' }]
       );
     } catch (error) {
-      Alert.alert('Export Failed', 'Failed to export data');
+      Alert.alert('Export Failed', 'Failed to export data. Please try again.');
+    }
+  };
+
+  const handleImport = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'application/json',
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) {
+        return;
+      }
+
+      Alert.alert(
+        'Import Data',
+        'This will replace all existing data. Do you want to continue?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Import',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await storageService.importFromFile(result.assets[0].uri);
+                Alert.alert(
+                  'Import Successful',
+                  'Your data has been imported successfully.',
+                  [
+                    { 
+                      text: 'OK',
+                      onPress: () => {
+                        // Navigate to inbox to trigger reload
+                        router.replace('/(tabs)');
+                      }
+                    }
+                  ]
+                );
+              } catch (error) {
+                Alert.alert(
+                  'Import Failed',
+                  'Failed to import data. Please make sure the file is a valid Taskflow export.',
+                  [{ text: 'OK' }]
+                );
+              }
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      Alert.alert('Import Failed', 'Failed to select file. Please try again.');
     }
   };
 
@@ -149,6 +202,23 @@ export default function SettingsScreen() {
             <ThemedText style={styles.optionText}>Export Data</ThemedText>
             <ThemedText style={styles.optionDescription}>
               Export all data as JSON file
+            </ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.option, { borderBottomColor: colors.border }]} onPress={handleImport}>
+            <ThemedText style={styles.optionText}>Import Data</ThemedText>
+            <ThemedText style={styles.optionDescription}>
+              Import data from JSON file
+            </ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.option, { borderBottomColor: colors.border }]} 
+            onPress={() => router.push('/archive')}
+          >
+            <ThemedText style={styles.optionText}>View Archive</ThemedText>
+            <ThemedText style={styles.optionDescription}>
+              View all completed tasks
             </ThemedText>
           </TouchableOpacity>
 

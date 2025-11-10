@@ -5,7 +5,8 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as FileSystem from 'expo-file-system';
+import { Paths, File } from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 import { GTDData, Task, Project, Tag, SyncMetadata } from '../types/gtd';
 
 const STORAGE_KEY = '@taskflow_gtd_data';
@@ -77,7 +78,7 @@ class StorageService {
   }
 
   /**
-   * Export data as JSON file to device storage
+   * Export data as JSON file and allow sharing/downloading
    */
   async exportToFile(): Promise<string> {
     try {
@@ -86,13 +87,20 @@ class StorageService {
       
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const filename = `taskflow-export-${timestamp}.json`;
-      const fileUri = `${FileSystem.documentDirectory}${filename}`;
+      const file = new File(Paths.cache, filename);
       
-      await FileSystem.writeAsStringAsync(fileUri, jsonData, {
-        encoding: FileSystem.EncodingType.UTF8,
-      });
+      await file.write(jsonData);
       
-      return fileUri;
+      const isSharingAvailable = await Sharing.isAvailableAsync();
+      if (isSharingAvailable) {
+        await Sharing.shareAsync(file.uri, {
+          mimeType: 'application/json',
+          dialogTitle: 'Export Taskflow Data',
+          UTI: 'public.json',
+        });
+      }
+      
+      return file.uri;
     } catch (error) {
       console.error('Error exporting data:', error);
       throw new Error('Failed to export data');
@@ -111,10 +119,27 @@ class StorageService {
         throw new Error('Invalid data format');
       }
       
+      // Ensure version is set
+      data.version = data.version || STORAGE_VERSION;
+      
       await this.saveData(data);
     } catch (error) {
       console.error('Error importing data:', error);
       throw new Error('Failed to import data');
+    }
+  }
+
+  /**
+   * Import data from a file URI
+   */
+  async importFromFile(fileUri: string): Promise<void> {
+    try {
+      const file = new File(fileUri);
+      const content = await file.text();
+      await this.importFromJson(content);
+    } catch (error) {
+      console.error('Error importing from file:', error);
+      throw new Error('Failed to import data from file');
     }
   }
 
