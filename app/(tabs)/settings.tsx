@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { StyleSheet, Alert, TouchableOpacity, ScrollView, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
-import { storageService, taskService } from '@/services';
+import { storageService, taskService, webdavService } from '@/services';
 import { useTheme } from '@/contexts/theme-context';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -13,9 +13,25 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 export default function SettingsScreen() {
   const [syncing, setSyncing] = useState(false);
   const [autoArchive, setAutoArchive] = useState(false);
+  const [webdavConfigured, setWebdavConfigured] = useState(false);
+  const [webdavInfo, setWebdavInfo] = useState<{ url: string; username: string } | null>(null);
   const { themeMode, setThemeMode } = useTheme();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme];
+
+  useFocusEffect(
+    React.useCallback(() => {
+      checkWebDAVStatus();
+    }, [])
+  );
+
+  const checkWebDAVStatus = () => {
+    const isConfigured = webdavService.isConfigured();
+    setWebdavConfigured(isConfigured);
+    if (isConfigured) {
+      setWebdavInfo(webdavService.getConfig());
+    }
+  };
 
   const handleExport = async () => {
     try {
@@ -126,16 +142,49 @@ export default function SettingsScreen() {
   };
 
   const handleSync = async () => {
+    if (!webdavConfigured) {
+      Alert.alert(
+        'WebDAV Not Configured',
+        'Please configure your WebDAV/Nextcloud connection first.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Configure', onPress: () => router.push('/webdav-setup') },
+        ]
+      );
+      return;
+    }
+
     setSyncing(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const result = await webdavService.sync();
       Alert.alert(
-        'Sync Coming Soon',
-        'WebDAV/Nextcloud sync will be available in a future version'
+        result.success ? 'Sync Complete' : 'Sync Failed',
+        result.message
       );
+    } catch (error) {
+      Alert.alert('Sync Failed', 'An error occurred during sync');
     } finally {
       setSyncing(false);
     }
+  };
+
+  const handleDisconnectWebDAV = () => {
+    Alert.alert(
+      'Disconnect WebDAV',
+      'This will remove your WebDAV connection. Your local data will not be affected.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Disconnect',
+          style: 'destructive',
+          onPress: () => {
+            webdavService.disconnect();
+            checkWebDAVStatus();
+            Alert.alert('Disconnected', 'WebDAV connection removed');
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -233,30 +282,64 @@ export default function SettingsScreen() {
         <ThemedView style={styles.section}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>Sync</ThemedText>
           
-          <TouchableOpacity 
-            style={[styles.option, { borderBottomColor: colors.border }]} 
-            onPress={handleSync}
-            disabled={syncing}
-          >
-            <ThemedText style={styles.optionText}>
-              {syncing ? 'Syncing...' : 'Sync Now'}
-            </ThemedText>
-            <ThemedText style={styles.optionDescription}>
-              WebDAV/Nextcloud sync (Coming Soon)
-            </ThemedText>
-          </TouchableOpacity>
+          {!webdavConfigured ? (
+            <TouchableOpacity 
+              style={[styles.option, { borderBottomColor: colors.border }]} 
+              onPress={() => router.push('/webdav-setup')}
+            >
+              <ThemedText style={styles.optionText}>Configure WebDAV / Nextcloud</ThemedText>
+              <ThemedText style={styles.optionDescription}>
+                Set up sync with your server
+              </ThemedText>
+            </TouchableOpacity>
+          ) : (
+            <>
+              <ThemedView style={[styles.option, { borderBottomColor: colors.border }]}>
+                <ThemedText style={styles.optionText}>WebDAV Connected</ThemedText>
+                <ThemedText style={styles.optionDescription}>
+                  {webdavInfo?.username}@{webdavInfo?.url.replace(/^https?:\/\//, '').split('/')[0]}
+                </ThemedText>
+              </ThemedView>
+
+              <TouchableOpacity 
+                style={[styles.option, { borderBottomColor: colors.border }]} 
+                onPress={handleSync}
+                disabled={syncing}
+              >
+                <ThemedText style={styles.optionText}>
+                  {syncing ? 'Syncing...' : 'Sync Now'}
+                </ThemedText>
+                <ThemedText style={styles.optionDescription}>
+                  Sync your data with the server
+                </ThemedText>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.option, { borderBottomColor: colors.border }]} 
+                onPress={handleDisconnectWebDAV}
+              >
+                <ThemedText style={[styles.optionText, { color: colors.danger }]}>
+                  Disconnect WebDAV
+                </ThemedText>
+                <ThemedText style={styles.optionDescription}>
+                  Remove server connection
+                </ThemedText>
+              </TouchableOpacity>
+            </>
+          )}
 
           <ThemedView style={[styles.option, { borderBottomColor: colors.border }]}>
             <ThemedView style={styles.optionWithSwitch}>
               <ThemedView style={styles.optionTextContainer}>
-                <ThemedText style={styles.optionText}>Auto Archive</ThemedText>
+                <ThemedText style={styles.optionText}>Auto Sync</ThemedText>
                 <ThemedText style={styles.optionDescription}>
-                  Automatically archive old completed tasks
+                  Automatically sync on app start (Coming Soon)
                 </ThemedText>
               </ThemedView>
               <Switch
                 value={autoArchive}
                 onValueChange={setAutoArchive}
+                disabled
               />
             </ThemedView>
           </ThemedView>
