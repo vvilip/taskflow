@@ -28,11 +28,12 @@ export default function SettingsScreen() {
     }, [])
   );
 
-  const checkWebDAVStatus = () => {
-    const isConfigured = webdavService.isConfigured();
+  const checkWebDAVStatus = async () => {
+    const isConfigured = await webdavService.isConfigured();
     setWebdavConfigured(isConfigured);
     if (isConfigured) {
-      setWebdavInfo(webdavService.getConfig());
+      const config = await webdavService.getConfig();
+      setWebdavInfo(config);
     }
   };
 
@@ -189,9 +190,9 @@ export default function SettingsScreen() {
         {
           text: 'Disconnect',
           style: 'destructive',
-          onPress: () => {
-            webdavService.disconnect();
-            checkWebDAVStatus();
+          onPress: async () => {
+            await webdavService.disconnect();
+            await checkWebDAVStatus();
             Alert.alert('Disconnected', 'WebDAV connection removed');
           },
         },
