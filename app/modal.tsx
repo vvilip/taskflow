@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { StyleSheet, TouchableOpacity, Platform, Dimensions, Keyboard } from 'react-native';
 import { ThemedView } from '@/components/themed-view';
-import { router } from 'expo-router';
+import { router, useRouter } from 'expo-router';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
@@ -23,7 +23,11 @@ export default function ModalScreen() {
 
   const handleClose = () => {
     taskFormRef.current?.handleSave();
-    router.dismiss();
+    if (router.canDismiss()) {
+      router.dismiss();
+    } else if (router.canGoBack()) {
+      router.back();
+    }
   };
 
   const dismissKeyboard = () => {
@@ -64,7 +68,7 @@ export default function ModalScreen() {
         <Animated.View style={[styles.modal, animatedStyle]}>
           <ThemedView style={styles.handle} />
           <ThemedView style={{ flex: 1, backgroundColor: colors.background }}>
-            <TaskForm ref={taskFormRef} id="new" onSave={() => router.dismiss()} />
+            <TaskForm ref={taskFormRef} id="new" onSave={handleClose} />
           </ThemedView>
         </Animated.View>
       </GestureDetector>
