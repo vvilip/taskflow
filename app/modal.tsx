@@ -1,13 +1,21 @@
 import React, { useRef } from 'react';
-import { StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, TouchableOpacity, Platform, Dimensions } from 'react-native';
 import { ThemedView } from '@/components/themed-view';
 import { router } from 'expo-router';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { runOnJS } from 'react-native-reanimated';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  runOnJS,
+} from 'react-native-reanimated';
 import { TaskForm } from '@/components/task-form';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function ModalScreen() {
   const taskFormRef = useRef<{ handleSave: () => void }>(null);
+  const translateY = useSharedValue(0);
 
   const handleClose = () => {
     taskFormRef.current?.handleSave();
@@ -15,20 +23,33 @@ export default function ModalScreen() {
   };
 
   const pan = Gesture.Pan()
-    .onEnd((e) => {
-      if (e.translationY > 100) {
-        runOnJS(handleClose)();
+    .onUpdate((event) => {
+      translateY.value = Math.max(0, event.translationY);
+    })
+    .onEnd(() => {
+      if (translateY.value > SCREEN_HEIGHT * 0.3) {
+        translateY.value = withTiming(SCREEN_HEIGHT, {}, () => {
+          runOnJS(handleClose)();
+        });
+      } else {
+        translateY.value = withTiming(0);
       }
     });
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateY: translateY.value }],
+    };
+  });
 
   return (
     <GestureDetector gesture={pan}>
       <ThemedView style={styles.container}>
         <TouchableOpacity style={styles.overlay} onPress={handleClose} />
-        <ThemedView style={styles.modal}>
+        <Animated.View style={[styles.modal, animatedStyle]}>
           <ThemedView style={styles.handle} />
           <TaskForm ref={taskFormRef} id="new" onSave={router.back} />
-        </ThemedView>
+        </Animated.View>
       </ThemedView>
     </GestureDetector>
   );
