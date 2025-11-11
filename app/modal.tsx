@@ -1,29 +1,51 @@
-import { Link } from 'expo-router';
-import { StyleSheet } from 'react-native';
-
-import { ThemedText } from '@/components/themed-text';
+import React, { useRef } from 'react';
+import { StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { ThemedView } from '@/components/themed-view';
+import { router } from 'expo-router';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { runOnJS } from 'react-native-reanimated';
+import { TaskForm } from '@/components/task-form';
 
 export default function ModalScreen() {
+  const taskFormRef = useRef<{ handleSave: () => void }>(null);
+
+  const handleClose = () => {
+    taskFormRef.current?.handleSave();
+    router.back();
+  };
+
+  const pan = Gesture.Pan()
+    .onEnd((e) => {
+      if (e.translationY > 100) {
+        runOnJS(handleClose)();
+      }
+    });
+
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="title">This is a modal</ThemedText>
-      <Link href="/" dismissTo style={styles.link}>
-        <ThemedText type="link">Go to home screen</ThemedText>
-      </Link>
-    </ThemedView>
+    <GestureDetector gesture={pan}>
+      <ThemedView style={styles.container}>
+        <TouchableOpacity style={styles.overlay} onPress={handleClose} />
+        <ThemedView style={styles.modal}>
+          <TaskForm ref={taskFormRef} id="new" onSave={router.back} />
+        </ThemedView>
+      </ThemedView>
+    </GestureDetector>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
+    justifyContent: 'flex-end',
   },
-  link: {
-    marginTop: 15,
-    paddingVertical: 15,
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modal: {
+    height: '80%',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    overflow: 'hidden',
   },
 });

@@ -41,7 +41,7 @@ export default function ProjectsScreen() {
   };
 
   const handleAddProject = () => {
-    router.push('/project/new');
+    router.push('/modal');
   };
 
   const renderProject = ({ item }: { item: Project }) => (

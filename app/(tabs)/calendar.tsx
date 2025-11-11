@@ -117,10 +117,7 @@ export default function CalendarScreen() {
   };
 
   const handleAddTask = () => {
-    router.push({
-      pathname: '/task/new',
-      params: { dueDate: selectedDate.getTime() },
-    });
+    router.push('/modal');
   };
 
   const renderCalendar = () => {
