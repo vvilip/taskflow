@@ -20,7 +20,13 @@ export function SwipeableTabBar({ navigationState, position, jumpTo }) {
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.tabBar, { height: 60 + insets.bottom, paddingBottom: insets.bottom }]}>
+    <View style={[styles.tabBar, { 
+      height: 60 + insets.bottom, 
+      paddingBottom: insets.bottom,
+      backgroundColor: colors.background,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    }]}>
       {navigationState.routes.map((route, i) => {
         const isFocused = navigationState.index === i;
         const iconName = isFocused ? iconMap[route.key].focused : iconMap[route.key].unfocused;
@@ -33,7 +39,6 @@ export function SwipeableTabBar({ navigationState, position, jumpTo }) {
             style={styles.tabItem}
           >
             <Ionicons name={iconName} size={24} color={color} />
-            <ThemedText style={{ color, fontSize: 10 }}>{route.title}</ThemedText>
           </TouchableOpacity>
         );
       })}
@@ -44,7 +49,6 @@ export function SwipeableTabBar({ navigationState, position, jumpTo }) {
 const styles = StyleSheet.create({
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: 'transparent',
   },
   tabItem: {
     flex: 1,
