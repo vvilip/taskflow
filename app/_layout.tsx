@@ -29,6 +29,14 @@ function RootLayoutNav() {
             headerShown: false 
           }} 
         />
+        <Stack.Screen 
+          name="project-modal" 
+          options={{ 
+            presentation: 'transparentModal',
+            animation: 'fade',
+            headerShown: false 
+          }} 
+        />
         <Stack.Screen name="webdav-setup" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />

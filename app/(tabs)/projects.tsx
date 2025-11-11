@@ -37,11 +37,11 @@ export default function ProjectsScreen() {
   };
 
   const handleProjectPress = (project: Project) => {
-    router.push(`/project/${project.id}`);
+    router.push({ pathname: '/project-modal', params: { projectId: project.id } });
   };
 
   const handleAddProject = () => {
-    router.push('/modal');
+    router.push({ pathname: '/project-modal', params: { projectId: 'new' } });
   };
 
   const renderProject = ({ item }: { item: Project }) => (
