@@ -11,7 +11,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 
 interface TaskFormProps {
   id?: string;
-  onSave?: (task: Partial<Task>) => void;
+  onSave?: (taskId: string) => void;
   onClose?: () => void;
 }
 
@@ -77,13 +77,16 @@ export const TaskForm = forwardRef(({ id, onSave, onClose }: TaskFormProps, ref)
     }
 
     try {
+      let savedTask: Task | undefined;
       if (isNew) {
-        await taskService.createTask(task);
+        savedTask = await taskService.createTask(task);
       } else if (id) {
-        await taskService.updateTask(id, task);
+        savedTask = await taskService.updateTask(id, task);
       }
       
-      onSave?.(task);
+      if (savedTask) {
+        onSave?.(savedTask.id);
+      }
     } catch (error) {
       Alert.alert('Error', 'Failed to save task');
     }

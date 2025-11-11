@@ -48,7 +48,7 @@ export default function TodayScreen() {
   };
 
   const handleTaskPress = (task: Task) => {
-    router.push(`/task/${task.id}`);
+    router.push({ pathname: '/modal', params: { taskId: task.id } });
   };
 
   const handleAddTask = () => {

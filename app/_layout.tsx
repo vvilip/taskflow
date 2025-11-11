@@ -19,11 +19,17 @@ function RootLayoutNav() {
     <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="task/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="project/[id]" options={{ headerShown: false }} />
-        <Stack.Screen name="archive" options={{ title: 'Archive', headerBackTitle: 'Back' }} />
-        <Stack.Screen name="webdav-setup" options={{ title: 'WebDAV Setup', headerBackTitle: 'Back' }} />
-        <Stack.Screen name="modal" options={{ presentation: 'transparentModal', title: 'Modal', headerShown: false }} />
+        <Stack.Screen name="archive" options={{ headerShown: false }} />
+        <Stack.Screen 
+          name="modal" 
+          options={{ 
+            presentation: 'transparentModal',
+            animation: 'fade',
+            headerShown: false 
+          }} 
+        />
+        <Stack.Screen name="webdav-setup" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />
     </NavigationThemeProvider>

@@ -31,7 +31,7 @@ export default function ArchiveScreen() {
   };
 
   const handleTaskPress = (task: Task) => {
-    router.push(`/task/${task.id}`);
+    router.push({ pathname: '/modal', params: { taskId: task.id } });
   };
 
   const handleToggleComplete = async (taskId: string) => {

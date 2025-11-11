@@ -60,7 +60,7 @@ export default function InboxScreen() {
   };
 
   const handleTaskPress = (task: Task) => {
-    router.push(`/task/${task.id}`);
+    router.push({ pathname: '/modal', params: { taskId: task.id } });
   };
 
   const handleAddTask = () => {
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 16,
     paddingTop: 16,
-    paddingBottom: 20,
+    paddingBottom: 8,
   },
   count: {
     fontSize: 14,
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   filterContainer: {
-    paddingVertical: 8,
+    paddingVertical: 4,
     paddingBottom: 4,
   },
   filterScroll: {
