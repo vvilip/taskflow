@@ -52,12 +52,7 @@ export default function TodayScreen() {
   };
 
   const handleAddTask = () => {
-    const today = new Date();
-    today.setHours(23, 59, 59, 999);
-    router.push({
-      pathname: '/task/new',
-      params: { dueDate: today.getTime().toString() },
-    });
+    router.push('/modal');
   };
 
   return (

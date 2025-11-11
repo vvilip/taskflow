@@ -64,7 +64,7 @@ export default function InboxScreen() {
   };
 
   const handleAddTask = () => {
-    router.push('/task/new');
+    router.push('/modal');
   };
 
   const colorScheme = useColorScheme();
