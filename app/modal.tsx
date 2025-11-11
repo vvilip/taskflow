@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { StyleSheet, TouchableOpacity, Platform, Dimensions } from 'react-native';
+import { StyleSheet, TouchableOpacity, Platform, Dimensions, Keyboard } from 'react-native';
 import { ThemedView } from '@/components/themed-view';
 import { router } from 'expo-router';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -26,7 +26,14 @@ export default function ModalScreen() {
     router.dismiss();
   };
 
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+  };
+
   const pan = Gesture.Pan()
+    .onStart(() => {
+      runOnJS(dismissKeyboard)();
+    })
     .onUpdate((event) => {
       translateY.value = Math.max(0, event.translationY);
     })
@@ -47,17 +54,21 @@ export default function ModalScreen() {
   });
 
   return (
-    <GestureDetector gesture={pan}>
-      <ThemedView style={styles.container}>
-        <TouchableOpacity style={styles.overlay} onPress={handleClose} />
+    <ThemedView style={styles.container}>
+      <TouchableOpacity 
+        style={styles.overlay} 
+        onPress={handleClose}
+        activeOpacity={1}
+      />
+      <GestureDetector gesture={pan}>
         <Animated.View style={[styles.modal, animatedStyle]}>
           <ThemedView style={styles.handle} />
           <ThemedView style={{ flex: 1, backgroundColor: colors.background }}>
             <TaskForm ref={taskFormRef} id="new" onSave={() => router.dismiss()} />
           </ThemedView>
         </Animated.View>
-      </ThemedView>
-    </GestureDetector>
+      </GestureDetector>
+    </ThemedView>
   );
 }
 
@@ -65,10 +76,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'flex-end',
+    backgroundColor: 'transparent',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
   },
   modal: {
     height: '90%',
