@@ -26,6 +26,7 @@ export default function ModalScreen() {
       <ThemedView style={styles.container}>
         <TouchableOpacity style={styles.overlay} onPress={handleClose} />
         <ThemedView style={styles.modal}>
+          <ThemedView style={styles.handle} />
           <TaskForm ref={taskFormRef} id="new" onSave={router.back} />
         </ThemedView>
       </ThemedView>
@@ -43,9 +44,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modal: {
-    height: '80%',
+    height: '90%',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     overflow: 'hidden',
+    paddingTop: 16,
+  },
+  handle: {
+    width: 40,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    alignSelf: 'center',
+    marginTop: 8,
+    marginBottom: 16,
   },
 });

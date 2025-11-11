@@ -23,7 +23,7 @@ function RootLayoutNav() {
         <Stack.Screen name="project/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="archive" options={{ title: 'Archive', headerBackTitle: 'Back' }} />
         <Stack.Screen name="webdav-setup" options={{ title: 'WebDAV Setup', headerBackTitle: 'Back' }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        <Stack.Screen name="modal" options={{ presentation: 'transparentModal', title: 'Modal', headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />
     </NavigationThemeProvider>
