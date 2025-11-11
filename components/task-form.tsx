@@ -190,7 +190,14 @@ export const TaskForm = forwardRef(({ id, onSave, onClose }: TaskFormProps, ref)
   };
 
   return (
-    <ScrollView style={styles.scrollView}>
+    <ScrollView 
+      style={styles.scrollView}
+      contentContainerStyle={styles.scrollViewContent}
+      showsVerticalScrollIndicator={true}
+      scrollEnabled={true}
+      nestedScrollEnabled={true}
+      keyboardShouldPersistTaps="handled"
+    >
       <ThemedView style={[styles.section, { borderBottomColor: colors.border }]}>
         <ThemedText style={styles.label}>Title *</ThemedText>
         <TextInput
@@ -376,8 +383,6 @@ export const TaskForm = forwardRef(({ id, onSave, onClose }: TaskFormProps, ref)
           </TouchableOpacity>
         </ThemedView>
       )}
-
-      <ThemedView style={styles.bottomPadding} />
     </ScrollView>
   );
 });
@@ -385,6 +390,9 @@ export const TaskForm = forwardRef(({ id, onSave, onClose }: TaskFormProps, ref)
 const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
+  },
+  scrollViewContent: {
+    paddingBottom: 120,
   },
   section: {
     paddingHorizontal: 16,
@@ -512,8 +520,5 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontSize: 16,
     fontWeight: '600',
-  },
-  bottomPadding: {
-    height: 40,
   },
 });
