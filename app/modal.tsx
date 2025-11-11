@@ -10,16 +10,20 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated';
 import { TaskForm } from '@/components/task-form';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors } from '@/constants/theme';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function ModalScreen() {
   const taskFormRef = useRef<{ handleSave: () => void }>(null);
   const translateY = useSharedValue(0);
+  const colorScheme = useColorScheme() ?? 'light';
+  const colors = Colors[colorScheme];
 
   const handleClose = () => {
     taskFormRef.current?.handleSave();
-    router.back();
+    router.dismiss();
   };
 
   const pan = Gesture.Pan()
@@ -48,7 +52,9 @@ export default function ModalScreen() {
         <TouchableOpacity style={styles.overlay} onPress={handleClose} />
         <Animated.View style={[styles.modal, animatedStyle]}>
           <ThemedView style={styles.handle} />
-          <TaskForm ref={taskFormRef} id="new" onSave={router.back} />
+          <ThemedView style={{ flex: 1, backgroundColor: colors.background }}>
+            <TaskForm ref={taskFormRef} id="new" onSave={() => router.dismiss()} />
+          </ThemedView>
         </Animated.View>
       </ThemedView>
     </GestureDetector>
@@ -66,10 +72,10 @@ const styles = StyleSheet.create({
   },
   modal: {
     height: '90%',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    overflow: 'hidden',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
     paddingTop: 16,
+    backgroundColor: 'white',
   },
   handle: {
     width: 40,
