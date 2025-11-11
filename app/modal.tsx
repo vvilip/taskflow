@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { StyleSheet, TouchableOpacity, Platform, Dimensions, Keyboard } from 'react-native';
 import { ThemedView } from '@/components/themed-view';
-import { router, useRouter, useLocalSearchParams } from 'expo-router';
+import { router, useRouter, useLocalSearchParams, useNavigation } from 'expo-router';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
@@ -21,6 +21,12 @@ export default function ModalScreen() {
   const colors = Colors[colorScheme];
   const { taskId, projectId } = useLocalSearchParams<{ taskId?: string; projectId?: string }>();
   const taskFormRef = React.useRef<any>(null);
+  const navigation = useNavigation();
+  
+  // Check if this modal is nested (opened from another modal)
+  const isNested = !!projectId;
+  const modalHeight = isNested ? '80%' : '90%';
+  const modalTopOffset = isNested ? 60 : 0;
 
   const handleClose = async () => {
     // Try to save before closing
@@ -40,6 +46,8 @@ export default function ModalScreen() {
   };
 
   const pan = Gesture.Pan()
+    .activeOffsetY([-10, 10])
+    .failOffsetX([-10, 10])
     .onStart(() => {
       runOnJS(dismissKeyboard)();
     })
@@ -56,8 +64,7 @@ export default function ModalScreen() {
       } else {
         translateY.value = withTiming(0);
       }
-    })
-    .simultaneousWithExternalGesture();
+    });
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -73,7 +80,11 @@ export default function ModalScreen() {
         activeOpacity={1}
       />
       <GestureDetector gesture={pan}>
-        <Animated.View style={[styles.modal, animatedStyle]}>
+        <Animated.View style={[
+          styles.modal, 
+          { height: modalHeight, marginTop: modalTopOffset },
+          animatedStyle
+        ]}>
           <ThemedView style={styles.handleContainer}>
             <ThemedView style={styles.handle} />
           </ThemedView>
@@ -97,7 +108,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
   },
   modal: {
-    height: '90%',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingTop: 16,
