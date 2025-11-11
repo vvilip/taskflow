@@ -40,6 +40,8 @@ export default function ProjectModalScreen() {
   };
 
   const pan = Gesture.Pan()
+    .activeOffsetY([-10, 10])
+    .failOffsetX([-10, 10])
     .onStart(() => {
       runOnJS(dismissKeyboard)();
     })
@@ -56,8 +58,7 @@ export default function ProjectModalScreen() {
       } else {
         translateY.value = withTiming(0);
       }
-    })
-    .simultaneousWithExternalGesture();
+    });
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
