@@ -63,14 +63,16 @@ export default function ModalScreen() {
         onPress={handleClose}
         activeOpacity={1}
       />
-      <GestureDetector gesture={pan}>
-        <Animated.View style={[styles.modal, animatedStyle]}>
-          <ThemedView style={styles.handle} />
-          <ThemedView style={{ flex: 1, backgroundColor: colors.background }}>
-            <TaskForm id={taskId ?? 'new'} onSave={handleClose} />
+      <Animated.View style={[styles.modal, animatedStyle]}>
+        <GestureDetector gesture={pan}>
+          <ThemedView style={styles.handleContainer}>
+            <ThemedView style={styles.handle} />
           </ThemedView>
-        </Animated.View>
-      </GestureDetector>
+        </GestureDetector>
+        <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
+          <TaskForm id={taskId ?? 'new'} onSave={handleClose} />
+        </ThemedView>
+      </Animated.View>
     </ThemedView>
   );
 }
@@ -98,7 +100,14 @@ const styles = StyleSheet.create({
     borderRadius: 2.5,
     backgroundColor: 'rgba(0,0,0,0.2)',
     alignSelf: 'center',
-    marginTop: 8,
-    marginBottom: 16,
+  },
+  handleContainer: {
+    paddingTop: 8,
+    paddingBottom: 16,
+    alignItems: 'center',
+  },
+  formContainer: {
+    flex: 1,
+    overflow: 'hidden',
   },
 });
