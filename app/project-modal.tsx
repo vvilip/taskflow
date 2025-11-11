@@ -1,7 +1,7 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { StyleSheet, TouchableOpacity, Platform, Dimensions, Keyboard } from 'react-native';
 import { ThemedView } from '@/components/themed-view';
-import { router, useRouter, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
@@ -9,23 +9,23 @@ import Animated, {
   withTiming,
   runOnJS,
 } from 'react-native-reanimated';
-import { TaskForm } from '@/components/task-form';
+import { ProjectForm } from '@/components/project-form';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-export default function ModalScreen() {
+export default function ProjectModalScreen() {
   const translateY = useSharedValue(0);
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { taskId, projectId } = useLocalSearchParams<{ taskId?: string; projectId?: string }>();
-  const taskFormRef = React.useRef<any>(null);
+  const { projectId } = useLocalSearchParams<{ projectId?: string }>();
+  const projectFormRef = React.useRef<any>(null);
 
   const handleClose = async () => {
     // Try to save before closing
-    if (taskFormRef.current?.handleSave) {
-      const saved = await taskFormRef.current.handleSave();
+    if (projectFormRef.current?.handleSave) {
+      await projectFormRef.current.handleSave();
     }
     
     if (router.canDismiss()) {
@@ -78,7 +78,7 @@ export default function ModalScreen() {
             <ThemedView style={styles.handle} />
           </ThemedView>
           <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
-            <TaskForm ref={taskFormRef} id={taskId ?? 'new'} projectId={projectId} />
+            <ProjectForm ref={projectFormRef} id={projectId ?? 'new'} onSave={handleClose} />
           </ThemedView>
         </Animated.View>
       </GestureDetector>

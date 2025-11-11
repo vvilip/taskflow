@@ -11,11 +11,12 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 
 interface TaskFormProps {
   id?: string;
+  projectId?: string;
   onSave?: (taskId: string) => void;
   onClose?: () => void;
 }
 
-export const TaskForm = forwardRef(({ id, onSave, onClose }: TaskFormProps, ref) => {
+export const TaskForm = forwardRef(({ id, projectId, onSave, onClose }: TaskFormProps, ref) => {
   const isNew = id === 'new';
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
@@ -26,7 +27,7 @@ export const TaskForm = forwardRef(({ id, onSave, onClose }: TaskFormProps, ref)
     status: undefined,
     priority: undefined,
     dueDate: undefined,
-    projectId: undefined,
+    projectId: projectId,
     tagIds: [],
     completed: false,
   });
@@ -73,7 +74,7 @@ export const TaskForm = forwardRef(({ id, onSave, onClose }: TaskFormProps, ref)
 
   const handleSave = async () => {
     if (!task.title?.trim()) {
-      return;
+      return false;
     }
 
     try {
@@ -84,11 +85,10 @@ export const TaskForm = forwardRef(({ id, onSave, onClose }: TaskFormProps, ref)
         savedTask = await taskService.updateTask(id, task);
       }
       
-      if (savedTask) {
-        onSave?.(savedTask.id);
-      }
+      return !!savedTask;
     } catch (error) {
       Alert.alert('Error', 'Failed to save task');
+      return false;
     }
   };
 
