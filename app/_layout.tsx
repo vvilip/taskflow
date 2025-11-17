@@ -8,16 +8,13 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { ThemeProvider } from '@/contexts/theme-context';
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
-
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
     <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
+      <Stack screenOptions={{ headerShown: false }} initialRouteName="index">
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="project/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="archive" options={{ headerShown: false }} />
@@ -26,7 +23,7 @@ function RootLayoutNav() {
           options={{ 
             presentation: 'transparentModal',
             animation: 'fade',
-            headerShown: false 
+            headerShown: false
           }} 
         />
         <Stack.Screen 
@@ -34,7 +31,7 @@ function RootLayoutNav() {
           options={{ 
             presentation: 'transparentModal',
             animation: 'fade',
-            headerShown: false 
+            headerShown: false
           }} 
         />
         <Stack.Screen name="webdav-setup" options={{ headerShown: false }} />

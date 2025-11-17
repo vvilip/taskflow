@@ -4,7 +4,7 @@
     "slug": "taskflow",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/Logo.png",
+    "icon": "./assets/images/Icon.png",
     "scheme": "taskflow",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,7 +14,7 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/Logo.png"
+        "foregroundImage": "./assets/images/Icon.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -29,7 +29,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/Logo.png",
+          "image": "./assets/images/Icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
@@ -41,7 +41,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/Logo.png",
+          "icon": "./assets/images/Icon.png",
           "color": "#0a7ea4",
           "sounds": [],
           "mode": "production"
