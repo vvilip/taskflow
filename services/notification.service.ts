@@ -3,18 +3,23 @@
  * Handles daily task notifications
  */
 
-import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import taskService from './task.service';
 
-// Configure notification behavior
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  } as Notifications.NotificationBehavior),
-});
+// Only import notifications on native platforms
+let Notifications: any;
+if (Platform.OS !== 'web') {
+  Notifications = require('expo-notifications');
+  
+  // Configure notification behavior
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
+}
 
 class NotificationService {
   private notificationId: string | null = null;
@@ -23,6 +28,9 @@ class NotificationService {
    * Request notification permissions
    */
   async requestPermissions(): Promise<boolean> {
+    if (Platform.OS === 'web') {
+      return false;
+    }
     try {
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
       let finalStatus = existingStatus;
@@ -58,6 +66,9 @@ class NotificationService {
    * Schedule daily notification at noon
    */
   async scheduleDailyNotification(): Promise<boolean> {
+    if (Platform.OS === 'web') {
+      return false;
+    }
     try {
       // Cancel existing notification if any
       if (this.notificationId) {
@@ -92,6 +103,9 @@ class NotificationService {
    * Schedule notification with task count
    */
   async scheduleDailyNotificationWithCount(): Promise<boolean> {
+    if (Platform.OS === 'web') {
+      return false;
+    }
     try {
       const hasPermission = await this.requestPermissions();
       if (!hasPermission) {
@@ -141,6 +155,9 @@ class NotificationService {
    * Cancel daily notification
    */
   async cancelDailyNotification(): Promise<void> {
+    if (Platform.OS === 'web') {
+      return;
+    }
     try {
       if (this.notificationId) {
         await Notifications.cancelScheduledNotificationAsync(this.notificationId);
@@ -156,6 +173,9 @@ class NotificationService {
    * Check if notifications are enabled
    */
   async isEnabled(): Promise<boolean> {
+    if (Platform.OS === 'web') {
+      return false;
+    }
     try {
       const { status } = await Notifications.getPermissionsAsync();
       return status === 'granted';
