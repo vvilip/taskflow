@@ -1,41 +1,70 @@
-import React, { useState } from 'react';
-import { Dimensions } from 'react-native';
-import { TabView, SceneMap } from 'react-native-tab-view';
-import InboxScreen from './index';
-import TodayScreen from './today';
-import CalendarScreen from './calendar';
-import ProjectsScreen from './projects';
-import SettingsScreen from './settings';
-import { SwipeableTabBar } from '@/components/swipeable-tab-bar';
-
-const renderScene = SceneMap({
-  inbox: InboxScreen,
-  today: TodayScreen,
-  calendar: CalendarScreen,
-  projects: ProjectsScreen,
-  settings: SettingsScreen,
-});
+import { Tabs } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors } from '@/constants/theme';
 
 export default function TabLayout() {
-  const [index, setIndex] = useState(0);
-  const [routes] = useState([
-    { key: 'inbox', title: 'Inbox' },
-    { key: 'today', title: 'Today' },
-    { key: 'calendar', title: 'Calendar' },
-    { key: 'projects', title: 'Projects' },
-    { key: 'settings', title: 'Settings' },
-  ]);
-
-  const initialLayout = { width: Dimensions.get('window').width };
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme];
 
   return (
-    <TabView
-      navigationState={{ index, routes }}
-      renderScene={renderScene}
-      onIndexChange={setIndex}
-      initialLayout={initialLayout}
-      tabBarPosition="bottom"
-      renderTabBar={props => <SwipeableTabBar {...props} />}
-    />
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: colors.tint,
+        tabBarInactiveTintColor: colors.tabIconDefault,
+        tabBarStyle: {
+          backgroundColor: colors.background,
+          borderTopColor: colors.border,
+          borderTopWidth: 1,
+        },
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Inbox',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'mail' : 'mail-outline'} size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="today"
+        options={{
+          title: 'Today',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'today' : 'today-outline'} size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="calendar"
+        options={{
+          title: 'Calendar',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'calendar' : 'calendar-outline'} size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="projects"
+        options={{
+          title: 'Projects',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'folder' : 'folder-outline'} size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: 'Settings',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'settings' : 'settings-outline'} size={24} color={color} />
+          ),
+        }}
+      />
+    </Tabs>
   );
 }
