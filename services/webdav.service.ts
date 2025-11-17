@@ -5,6 +5,7 @@
 
 import { createClient, WebDAVClient, FileStat } from 'webdav';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 import { GTDData } from '../types/gtd';
 import storageService from './storage.service';
 
@@ -23,13 +24,18 @@ class WebDAVService {
   private initializationPromise: Promise<void> | null = null;
 
   constructor() {
-    this.initializationPromise = this.loadAndInitialize();
+    if (Platform.OS !== 'web') {
+      this.initializationPromise = this.loadAndInitialize();
+    }
   }
 
   /**
    * Load stored credentials and initialize client on app start
    */
   private async loadAndInitialize(): Promise<void> {
+    if (Platform.OS === 'web') {
+      return;
+    }
     try {
       const configJson = await AsyncStorage.getItem(WEBDAV_CONFIG_KEY);
       if (configJson) {
@@ -78,7 +84,7 @@ class WebDAVService {
     await this.client.exists('/');
 
     // Save config for persistence
-    if (saveConfig) {
+    if (saveConfig && Platform.OS !== 'web') {
       await AsyncStorage.setItem(WEBDAV_CONFIG_KEY, JSON.stringify(this.config));
     }
   }
@@ -121,7 +127,9 @@ class WebDAVService {
   async disconnect(): Promise<void> {
     this.client = null;
     this.config = null;
-    await AsyncStorage.removeItem(WEBDAV_CONFIG_KEY);
+    if (Platform.OS !== 'web') {
+      await AsyncStorage.removeItem(WEBDAV_CONFIG_KEY);
+    }
   }
 
   /**
