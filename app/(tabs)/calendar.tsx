@@ -102,13 +102,21 @@ export default function CalendarScreen() {
 
       if (task.completed) {
         await taskService.uncompleteTask(taskId);
+        await loadTasks();
       } else {
+        setTasks(prevTasks => 
+          prevTasks.map(t => t.id === taskId ? { ...t, completed: true } : t)
+        );
+        
         await taskService.completeTask(taskId);
+        
+        setTimeout(() => {
+          loadTasks();
+        }, 1700);
       }
-      
-      await loadTasks();
     } catch (error) {
       Alert.alert('Error', 'Failed to update task');
+      await loadTasks();
     }
   };
 

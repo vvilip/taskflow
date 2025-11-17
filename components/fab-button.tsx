@@ -43,6 +43,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 32,
     fontWeight: '300',
-    marginTop: -2,
+    lineHeight: 32,
   },
 });

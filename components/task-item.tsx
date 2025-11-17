@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { StyleSheet, TouchableOpacity, View, Animated } from 'react-native';
 import { Task } from '@/types/gtd';
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
@@ -15,10 +15,53 @@ interface TaskItemProps {
 export function TaskItem({ task, onPress, onToggleComplete }: TaskItemProps) {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const strikeAnim = useRef(new Animated.Value(0)).current;
+  const [textWidth, setTextWidth] = React.useState(0);
 
   const priorityColor = task.priority === 'high' ? '#ef4444' : 
                        task.priority === 'medium' ? '#f59e0b' : 
                        colors.subtitle;
+
+  useEffect(() => {
+    if (task.completed) {
+      // Animate strikethrough
+      Animated.parallel([
+        Animated.timing(strikeAnim, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: false,
+        }),
+        Animated.sequence([
+          Animated.timing(scaleAnim, {
+            toValue: 0.98,
+            duration: 100,
+            useNativeDriver: true,
+          }),
+          Animated.timing(scaleAnim, {
+            toValue: 1,
+            duration: 100,
+            useNativeDriver: true,
+          }),
+        ])
+      ]).start(() => {
+        // Wait 1 second, then fade out
+        setTimeout(() => {
+          Animated.timing(fadeAnim, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }).start();
+        }, 1000);
+      });
+    } else {
+      // Reset animations when uncompleted
+      fadeAnim.setValue(1);
+      scaleAnim.setValue(1);
+      strikeAnim.setValue(0);
+    }
+  }, [task.completed]);
 
   const formatDate = (timestamp?: number) => {
     if (!timestamp) return null;
@@ -35,8 +78,19 @@ export function TaskItem({ task, onPress, onToggleComplete }: TaskItemProps) {
     return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
   };
 
+  const strikeWidth = strikeAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, textWidth],
+  });
+
   return (
-    <ThemedView style={styles.container}>
+    <Animated.View style={[
+      styles.container,
+      {
+        opacity: fadeAnim,
+        transform: [{ scale: scaleAnim }],
+      }
+    ]}>
       <TouchableOpacity 
         style={[
           styles.checkbox, 
@@ -53,15 +107,31 @@ export function TaskItem({ task, onPress, onToggleComplete }: TaskItemProps) {
           {task.priority && (
             <View style={[styles.priorityBadge, { backgroundColor: priorityColor }]} />
           )}
-          <ThemedText 
-            style={[
-              styles.title,
-              task.completed && styles.completedText
-            ]}
-            numberOfLines={1}
-          >
-            {task.title}
-          </ThemedText>
+          <View style={styles.titleWrapper}>
+            <View style={styles.titleContainer}>
+              <ThemedText 
+                style={[
+                  styles.title,
+                  task.completed && styles.completedText
+                ]}
+                numberOfLines={1}
+                onLayout={(e) => setTextWidth(e.nativeEvent.layout.width)}
+              >
+                {task.title}
+              </ThemedText>
+              {task.completed && (
+                <Animated.View 
+                  style={[
+                    styles.strikeLine, 
+                    { 
+                      width: strikeWidth,
+                      backgroundColor: colors.text,
+                    }
+                  ]} 
+                />
+              )}
+            </View>
+          </View>
         </View>
         
         {(task.description || task.dueDate) && (
@@ -79,7 +149,7 @@ export function TaskItem({ task, onPress, onToggleComplete }: TaskItemProps) {
           </View>
         )}
       </TouchableOpacity>
-    </ThemedView>
+    </Animated.View>
   );
 }
 
@@ -121,13 +191,25 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
   },
-  title: {
-    fontSize: 16,
+  titleWrapper: {
     flex: 1,
   },
+  titleContainer: {
+    alignSelf: 'flex-start',
+    position: 'relative',
+  },
+  title: {
+    fontSize: 16,
+  },
   completedText: {
-    textDecorationLine: 'line-through',
     opacity: 0.5,
+  },
+  strikeLine: {
+    position: 'absolute',
+    top: '50%',
+    left: 0,
+    height: 2,
+    opacity: 0.6,
   },
   meta: {
     marginTop: 4,
