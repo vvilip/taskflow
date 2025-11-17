@@ -13,8 +13,7 @@ function RootLayoutNav() {
 
   return (
     <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack screenOptions={{ headerShown: false }} initialRouteName="index">
-        <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="project/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="archive" options={{ headerShown: false }} />
