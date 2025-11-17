@@ -78,9 +78,6 @@ export const ProjectForm = forwardRef(({ id, onSave, onClose }: ProjectFormProps
       let savedProject: Project | undefined;
       if (isNew) {
         savedProject = await projectService.createProject(project);
-        if (savedProject) {
-          onSave?.(savedProject.id);
-        }
       } else if (id) {
         savedProject = await projectService.updateProject(id, project);
         setIsEditing(false);

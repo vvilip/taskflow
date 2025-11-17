@@ -25,7 +25,11 @@ export default function ProjectModalScreen() {
   const handleClose = async () => {
     // Try to save before closing
     if (projectFormRef.current?.handleSave) {
-      await projectFormRef.current.handleSave();
+      const saved = await projectFormRef.current.handleSave();
+      if (!saved && projectId === 'new') {
+        // Don't close if save failed on new project
+        return;
+      }
     }
     
     if (router.canDismiss()) {
