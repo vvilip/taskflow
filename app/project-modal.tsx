@@ -23,13 +23,10 @@ export default function ProjectModalScreen() {
   const projectFormRef = React.useRef<any>(null);
 
   const handleClose = async () => {
-    // Try to save before closing
+    // Try to save before closing (only if there's content)
     if (projectFormRef.current?.handleSave) {
       const saved = await projectFormRef.current.handleSave();
-      if (!saved && projectId === 'new') {
-        // Don't close if save failed on new project
-        return;
-      }
+      // If save returned false, it means validation failed - just close modal without saving
     }
     
     if (router.canDismiss()) {

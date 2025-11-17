@@ -116,13 +116,21 @@ export default function ProjectDetailScreen() {
 
       if (task.completed) {
         await taskService.uncompleteTask(taskId);
+        await loadData();
       } else {
+        setTasks(prevTasks => 
+          prevTasks.map(t => t.id === taskId ? { ...t, completed: true } : t)
+        );
+        
         await taskService.completeTask(taskId);
+        
+        setTimeout(() => {
+          loadData();
+        }, 1700);
       }
-      
-      await loadData();
     } catch (error) {
       Alert.alert('Error', 'Failed to update task');
+      await loadData();
     }
   };
 

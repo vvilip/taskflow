@@ -49,13 +49,23 @@ export default function InboxScreen() {
 
       if (task.completed) {
         await taskService.uncompleteTask(taskId);
+        await loadTasks();
       } else {
+        // Optimistically update UI for animation
+        setTasks(prevTasks => 
+          prevTasks.map(t => t.id === taskId ? { ...t, completed: true } : t)
+        );
+        
         await taskService.completeTask(taskId);
+        
+        // Wait for animation, then reload
+        setTimeout(() => {
+          loadTasks();
+        }, 1700);
       }
-      
-      await loadTasks();
     } catch (error) {
       Alert.alert('Error', 'Failed to update task');
+      await loadTasks(); // Reload on error to revert optimistic update
     }
   };
 
