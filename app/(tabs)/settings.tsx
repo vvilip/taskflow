@@ -1,19 +1,23 @@
 import React, { useState } from 'react';
-import { StyleSheet, Alert, TouchableOpacity, ScrollView, Switch } from 'react-native';
+import { StyleSheet, Alert, TouchableOpacity, ScrollView, Switch, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { storageService, taskService, webdavService, notificationService } from '@/services';
 import { useTheme } from '@/contexts/theme-context';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { DEFAULT_REMINDER_TIME, ReminderTime, formatReminderTime } from '@/utils/reminder';
 
 export default function SettingsScreen() {
   const [syncing, setSyncing] = useState(false);
   const [autoArchive, setAutoArchive] = useState(false);
   const [dailyNotifications, setDailyNotifications] = useState(false);
+  const [reminderTime, setReminderTime] = useState<ReminderTime>(DEFAULT_REMINDER_TIME);
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [webdavConfigured, setWebdavConfigured] = useState(false);
   const [webdavInfo, setWebdavInfo] = useState<{ url: string; username: string } | null>(null);
   const { themeMode, setThemeMode } = useTheme();
@@ -40,6 +44,7 @@ export default function SettingsScreen() {
     // Check if there are scheduled notifications
     const scheduled = await notificationService.getScheduledNotifications();
     setDailyNotifications(scheduled.length > 0);
+    setReminderTime(await notificationService.getReminderTime());
   };
 
   const handleExport = async () => {
@@ -212,7 +217,7 @@ export default function SettingsScreen() {
         setDailyNotifications(true);
         Alert.alert(
           'Notifications Enabled',
-          'You will receive a daily reminder at 12:00 PM'
+          `You will receive a daily reminder at ${formatReminderTime(reminderTime)}`
         );
       }
     } else {
@@ -221,6 +226,32 @@ export default function SettingsScreen() {
       Alert.alert('Notifications Disabled', 'Daily reminders have been turned off');
     }
   };
+
+  const handleReminderTimeChange = async (
+    event: { type: string },
+    selectedDate?: Date
+  ) => {
+    setShowTimePicker(Platform.OS === 'ios');
+    if (event.type === 'dismissed' || !selectedDate) {
+      return;
+    }
+    const newTime: ReminderTime = {
+      hour: selectedDate.getHours(),
+      minute: selectedDate.getMinutes(),
+    };
+    setReminderTime(newTime);
+    try {
+      await notificationService.setReminderTime(newTime);
+    } catch {
+      Alert.alert('Error', 'Failed to update reminder time');
+    }
+  };
+
+  const reminderDate = (() => {
+    const date = new Date();
+    date.setHours(reminderTime.hour, reminderTime.minute, 0, 0);
+    return date;
+  })();
 
   const handleTestNotification = async () => {
     const hasPermission = await notificationService.requestPermissions();
@@ -301,7 +332,7 @@ export default function SettingsScreen() {
               <ThemedView style={styles.optionTextContainer}>
                 <ThemedText style={styles.optionText}>Daily Reminder</ThemedText>
                 <ThemedText style={styles.optionDescription}>
-                  Get notified daily at 12:00 PM
+                  Get notified daily at {formatReminderTime(reminderTime)} with your task count
                 </ThemedText>
               </ThemedView>
               <Switch
@@ -312,15 +343,46 @@ export default function SettingsScreen() {
           </ThemedView>
 
           {dailyNotifications && (
-            <TouchableOpacity 
-              style={[styles.option, { borderBottomColor: colors.border }]} 
-              onPress={handleTestNotification}
-            >
-              <ThemedText style={styles.optionText}>Send Test Notification</ThemedText>
-              <ThemedText style={styles.optionDescription}>
-                Test your notification settings
-              </ThemedText>
-            </TouchableOpacity>
+            <>
+              <ThemedView style={[styles.option, { borderBottomColor: colors.border }]}>
+                <ThemedView style={styles.optionWithSwitch}>
+                  <ThemedView style={styles.optionTextContainer}>
+                    <ThemedText style={styles.optionText}>Reminder Time</ThemedText>
+                    <ThemedText style={styles.optionDescription}>
+                      When the daily reminder is sent
+                    </ThemedText>
+                  </ThemedView>
+                  <TouchableOpacity
+                    style={[styles.timeButton, { borderColor: colors.border }]}
+                    onPress={() => setShowTimePicker(true)}
+                  >
+                    <ThemedText style={[styles.timeButtonText, { color: colors.tint }]}>
+                      {formatReminderTime(reminderTime)}
+                    </ThemedText>
+                  </TouchableOpacity>
+                </ThemedView>
+              </ThemedView>
+
+              {showTimePicker && (
+                <DateTimePicker
+                  value={reminderDate}
+                  mode="time"
+                  is24Hour
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={handleReminderTimeChange}
+                />
+              )}
+
+              <TouchableOpacity
+                style={[styles.option, { borderBottomColor: colors.border }]}
+                onPress={handleTestNotification}
+              >
+                <ThemedText style={styles.optionText}>Send Test Notification</ThemedText>
+                <ThemedText style={styles.optionDescription}>
+                  Test your notification settings
+                </ThemedText>
+              </TouchableOpacity>
+            </>
           )}
         </ThemedView>
 
@@ -502,6 +564,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  timeButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  timeButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
   optionTextContainer: {
     flex: 1,

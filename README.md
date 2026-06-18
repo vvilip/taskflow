@@ -12,7 +12,7 @@ A GTD-style (Getting Things Done) task manager for iOS and Android, built with E
 - **Local persistence** via AsyncStorage (JSON)
 - **Export / import** as a JSON file using the native share sheet
 - **WebDAV / Nextcloud sync** with last-write-wins conflict resolution; supports force-push and force-pull
-- **Daily task reminder** notification at noon (native platforms only, includes today's task count)
+- **Daily task reminder** notification at a configurable time (native platforms only); the reminder shows how many tasks are scheduled for today and the count refreshes on app launch
 - **Light / dark / system** theme, persisted across sessions
 
 ## Tech Stack

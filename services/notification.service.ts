@@ -4,8 +4,17 @@
  */
 
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { NotificationRequest } from 'expo-notifications';
 import taskService from './task.service';
+import {
+  DEFAULT_REMINDER_TIME,
+  ReminderTime,
+  buildReminderBody,
+  isValidReminderTime,
+} from '../utils/reminder';
+
+const REMINDER_TIME_KEY = '@taskflow_reminder_time';
 
 // Only import notifications on native platforms
 let Notifications: any;
@@ -64,44 +73,43 @@ class NotificationService {
   }
 
   /**
-   * Schedule daily notification at noon
+   * Get the configured daily reminder time (falls back to the default).
    */
-  async scheduleDailyNotification(): Promise<boolean> {
-    if (Platform.OS === 'web') {
-      return false;
-    }
+  async getReminderTime(): Promise<ReminderTime> {
     try {
-      // Cancel existing notification if any
-      if (this.notificationId) {
-        await Notifications.cancelScheduledNotificationAsync(this.notificationId);
+      const json = await AsyncStorage.getItem(REMINDER_TIME_KEY);
+      if (json) {
+        const parsed = JSON.parse(json) as ReminderTime;
+        if (isValidReminderTime(parsed)) {
+          return parsed;
+        }
       }
-
-      // Schedule notification for noon every day
-      this.notificationId = await Notifications.scheduleNotificationAsync({
-        content: {
-          title: 'Daily Task Reminder',
-          body: 'Check your tasks for today',
-          sound: true,
-          priority: Notifications.AndroidNotificationPriority.HIGH,
-        },
-        trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.DAILY,
-          hour: 12,
-          minute: 0,
-          repeats: true,
-        } as any,
-      });
-
-      console.log('Daily notification scheduled:', this.notificationId);
-      return true;
     } catch (error) {
-      console.error('Failed to schedule notification:', error);
-      return false;
+      console.error('Failed to load reminder time:', error);
+    }
+    return DEFAULT_REMINDER_TIME;
+  }
+
+  /**
+   * Persist a new reminder time. If a daily reminder is currently scheduled,
+   * it is rescheduled at the new time.
+   */
+  async setReminderTime(time: ReminderTime): Promise<void> {
+    if (!isValidReminderTime(time)) {
+      throw new Error('Invalid reminder time');
+    }
+    await AsyncStorage.setItem(REMINDER_TIME_KEY, JSON.stringify(time));
+    if (Platform.OS !== 'web') {
+      const scheduled = await this.getScheduledNotifications();
+      if (scheduled.length > 0) {
+        await this.scheduleDailyNotificationWithCount();
+      }
     }
   }
 
   /**
-   * Schedule notification with task count
+   * Schedule the daily reminder at the configured time, with a body that
+   * reflects how many tasks are scheduled for today.
    */
   async scheduleDailyNotificationWithCount(): Promise<boolean> {
     if (Platform.OS === 'web') {
@@ -113,21 +121,15 @@ class NotificationService {
         return false;
       }
 
-      // Cancel existing notification if any
-      if (this.notificationId) {
-        await Notifications.cancelScheduledNotificationAsync(this.notificationId);
-      }
+      // Cancel any previously scheduled reminder. We cancel all (rather than
+      // by id) so duplicates can't pile up across app restarts, where the
+      // in-memory notificationId is lost.
+      await Notifications.cancelAllScheduledNotificationsAsync();
 
-      // Get today's task count
       const todayTasks = await taskService.getTodayTasks();
-      const taskCount = todayTasks.length;
+      const body = buildReminderBody(todayTasks.length);
+      const { hour, minute } = await this.getReminderTime();
 
-      let body = 'Check your tasks for today';
-      if (taskCount > 0) {
-        body = `You have ${taskCount} task${taskCount > 1 ? 's' : ''} scheduled for today`;
-      }
-
-      // Schedule notification for noon every day
       this.notificationId = await Notifications.scheduleNotificationAsync({
         content: {
           title: '📋 Daily Task Reminder',
@@ -138,13 +140,12 @@ class NotificationService {
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.DAILY,
-          hour: 12,
-          minute: 0,
+          hour,
+          minute,
           repeats: true,
         } as any,
       });
 
-      console.log('Daily notification scheduled with count:', this.notificationId);
       return true;
     } catch (error) {
       console.error('Failed to schedule notification with count:', error);
@@ -153,18 +154,33 @@ class NotificationService {
   }
 
   /**
-   * Cancel daily notification
+   * Re-schedule the daily reminder if one is already active, so the task
+   * count and configured time stay current. Safe to call on app start.
+   */
+  async refreshDailyNotificationIfEnabled(): Promise<void> {
+    if (Platform.OS === 'web') {
+      return;
+    }
+    try {
+      const scheduled = await this.getScheduledNotifications();
+      if (scheduled.length > 0) {
+        await this.scheduleDailyNotificationWithCount();
+      }
+    } catch (error) {
+      console.error('Failed to refresh daily notification:', error);
+    }
+  }
+
+  /**
+   * Cancel the daily reminder.
    */
   async cancelDailyNotification(): Promise<void> {
     if (Platform.OS === 'web') {
       return;
     }
     try {
-      if (this.notificationId) {
-        await Notifications.cancelScheduledNotificationAsync(this.notificationId);
-        this.notificationId = null;
-        console.log('Daily notification cancelled');
-      }
+      await Notifications.cancelAllScheduledNotificationsAsync();
+      this.notificationId = null;
     } catch (error) {
       console.error('Failed to cancel notification:', error);
     }
@@ -216,12 +232,7 @@ class NotificationService {
   async sendTestNotification(): Promise<void> {
     try {
       const todayTasks = await taskService.getTodayTasks();
-      const taskCount = todayTasks.length;
-
-      let body = 'No tasks scheduled for today';
-      if (taskCount > 0) {
-        body = `You have ${taskCount} task${taskCount > 1 ? 's' : ''} scheduled for today`;
-      }
+      const body = buildReminderBody(todayTasks.length);
 
       await Notifications.scheduleNotificationAsync({
         content: {
