@@ -1,5 +1,5 @@
 import { withLayoutContext } from 'expo-router';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import { createMaterialTopTabNavigator, MaterialTopTabBarProps } from '@react-navigation/material-top-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,18 +9,20 @@ import { Colors } from '@/constants/theme';
 const { Navigator } = createMaterialTopTabNavigator();
 const MaterialTopTabs = withLayoutContext(Navigator);
 
-function CustomTabBar({ state, descriptors, navigation }) {
+type TabIcon = { focused: keyof typeof Ionicons.glyphMap; unfocused: keyof typeof Ionicons.glyphMap };
+
+const iconMap: Record<string, TabIcon> = {
+  index: { focused: 'mail', unfocused: 'mail-outline' },
+  today: { focused: 'today', unfocused: 'today-outline' },
+  calendar: { focused: 'calendar', unfocused: 'calendar-outline' },
+  projects: { focused: 'folder', unfocused: 'folder-outline' },
+  settings: { focused: 'settings', unfocused: 'settings-outline' },
+};
+
+function CustomTabBar({ state, navigation }: MaterialTopTabBarProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme];
   const insets = useSafeAreaInsets();
-
-  const iconMap = {
-    index: { focused: 'mail', unfocused: 'mail-outline' },
-    today: { focused: 'today', unfocused: 'today-outline' },
-    calendar: { focused: 'calendar', unfocused: 'calendar-outline' },
-    projects: { focused: 'folder', unfocused: 'folder-outline' },
-    settings: { focused: 'settings', unfocused: 'settings-outline' },
-  };
 
   return (
     <View style={[styles.tabBar, { 
@@ -32,7 +34,8 @@ function CustomTabBar({ state, descriptors, navigation }) {
     }]}>
       {state.routes.map((route, index) => {
         const isFocused = state.index === index;
-        const iconName = isFocused ? iconMap[route.name]?.focused : iconMap[route.name]?.unfocused;
+        const icon = iconMap[route.name];
+        const iconName = (isFocused ? icon?.focused : icon?.unfocused) ?? 'ellipse-outline';
         const color = isFocused ? colors.tint : colors.tabIconDefault;
 
         const onPress = () => {
@@ -62,9 +65,6 @@ function CustomTabBar({ state, descriptors, navigation }) {
 }
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme];
-
   return (
     <MaterialTopTabs
       tabBarPosition="bottom"

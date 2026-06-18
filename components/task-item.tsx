@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import { StyleSheet, TouchableOpacity, View, Animated } from 'react-native';
 import { Task } from '@/types/gtd';
 import { ThemedText } from './themed-text';
-import { ThemedView } from './themed-view';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -26,8 +25,9 @@ export function TaskItem({ task, onPress, onToggleComplete }: TaskItemProps) {
 
   useEffect(() => {
     if (task.completed) {
+      let fadeTimeout: ReturnType<typeof setTimeout> | undefined;
       // Animate strikethrough
-      Animated.parallel([
+      const animation = Animated.parallel([
         Animated.timing(strikeAnim, {
           toValue: 1,
           duration: 400,
@@ -45,9 +45,10 @@ export function TaskItem({ task, onPress, onToggleComplete }: TaskItemProps) {
             useNativeDriver: true,
           }),
         ])
-      ]).start(() => {
+      ]);
+      animation.start(() => {
         // Wait 1 second, then fade out
-        setTimeout(() => {
+        fadeTimeout = setTimeout(() => {
           Animated.timing(fadeAnim, {
             toValue: 0,
             duration: 300,
@@ -55,13 +56,22 @@ export function TaskItem({ task, onPress, onToggleComplete }: TaskItemProps) {
           }).start();
         }, 1000);
       });
+
+      // Cancel the pending animation/timeout if the task is toggled back
+      // or the component unmounts, so we never call start() after unmount.
+      return () => {
+        animation.stop();
+        if (fadeTimeout) {
+          clearTimeout(fadeTimeout);
+        }
+      };
     } else {
       // Reset animations when uncompleted
       fadeAnim.setValue(1);
       scaleAnim.setValue(1);
       strikeAnim.setValue(0);
     }
-  }, [task.completed]);
+  }, [task.completed, fadeAnim, scaleAnim, strikeAnim]);
 
   const formatDate = (timestamp?: number) => {
     if (!timestamp) return null;

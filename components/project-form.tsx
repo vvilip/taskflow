@@ -16,7 +16,7 @@ interface ProjectFormProps {
   onClose?: () => void;
 }
 
-export const ProjectForm = forwardRef(({ id, onSave, onClose }: ProjectFormProps, ref) => {
+export const ProjectForm = forwardRef(function ProjectForm({ id, onSave, onClose }: ProjectFormProps, ref) {
   const isNew = id === 'new';
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
@@ -30,7 +30,6 @@ export const ProjectForm = forwardRef(({ id, onSave, onClose }: ProjectFormProps
   });
   
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(!isNew);
   const [isEditing, setIsEditing] = useState(isNew);
 
   useImperativeHandle(ref, () => ({
@@ -62,10 +61,8 @@ export const ProjectForm = forwardRef(({ id, onSave, onClose }: ProjectFormProps
           onClose?.();
         }
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to load project');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -85,7 +82,7 @@ export const ProjectForm = forwardRef(({ id, onSave, onClose }: ProjectFormProps
       }
       
       return !!savedProject;
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to save project');
       return false;
     }
@@ -106,7 +103,7 @@ export const ProjectForm = forwardRef(({ id, onSave, onClose }: ProjectFormProps
                 await projectService.deleteProject(id);
                 onClose?.();
               }
-            } catch (error) {
+            } catch {
               Alert.alert('Error', 'Failed to delete project');
             }
           },
@@ -128,7 +125,7 @@ export const ProjectForm = forwardRef(({ id, onSave, onClose }: ProjectFormProps
       if (updatedProject) {
         setProject(updatedProject);
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to archive project');
     }
   };
@@ -145,7 +142,7 @@ export const ProjectForm = forwardRef(({ id, onSave, onClose }: ProjectFormProps
       }
       
       await loadData();
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to update task');
     }
   };
@@ -187,7 +184,7 @@ export const ProjectForm = forwardRef(({ id, onSave, onClose }: ProjectFormProps
 
         {project.archived && (
           <ThemedView style={styles.archivedBadgeContainer}>
-            <View style={[styles.archivedBadge, { backgroundColor: colors.secondaryBackground }]}>
+            <View style={[styles.archivedBadge, { backgroundColor: colors.archiveBackground }]}>
               <ThemedText style={styles.archivedText}>Archived</ThemedText>
             </View>
           </ThemedView>
@@ -309,7 +306,7 @@ export const ProjectForm = forwardRef(({ id, onSave, onClose }: ProjectFormProps
         <>
           <ThemedView style={[styles.section, { borderBottomColor: colors.border }]}>
             <TouchableOpacity 
-              style={[styles.archiveButton, { backgroundColor: colors.secondaryBackground }]} 
+              style={[styles.archiveButton, { backgroundColor: colors.archiveBackground }]}
               onPress={handleArchive}
             >
               <ThemedText style={styles.archiveButtonText}>

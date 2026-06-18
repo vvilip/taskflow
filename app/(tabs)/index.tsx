@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Alert, TouchableOpacity, ScrollView, View } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Alert, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { ThemedView } from '@/components/themed-view';
@@ -13,7 +13,6 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function InboxScreen() {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<'all' | 'waiting' | 'someday'>('all');
 
   useFocusEffect(
@@ -35,10 +34,8 @@ export default function InboxScreen() {
           : inboxTasks.filter(t => t.status === statusFilter);
         setTasks(filtered);
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to load tasks');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -63,7 +60,7 @@ export default function InboxScreen() {
           loadTasks();
         }, 1700);
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to update task');
       await loadTasks(); // Reload on error to revert optimistic update
     }

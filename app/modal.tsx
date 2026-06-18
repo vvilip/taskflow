@@ -1,7 +1,7 @@
-import React, { useRef } from 'react';
-import { StyleSheet, TouchableOpacity, Platform, Dimensions, Keyboard } from 'react-native';
+import React from 'react';
+import { StyleSheet, TouchableOpacity, Dimensions, Keyboard } from 'react-native';
 import { ThemedView } from '@/components/themed-view';
-import { router, useRouter, useLocalSearchParams, useNavigation } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
@@ -21,7 +21,6 @@ export default function ModalScreen() {
   const colors = Colors[colorScheme];
   const { taskId, projectId } = useLocalSearchParams<{ taskId?: string; projectId?: string }>();
   const taskFormRef = React.useRef<any>(null);
-  const navigation = useNavigation();
   
   // Check if this modal is nested (opened from another modal)
   const isNested = !!projectId;
@@ -31,7 +30,7 @@ export default function ModalScreen() {
   const handleClose = async () => {
     // Try to save before closing
     if (taskFormRef.current?.handleSave) {
-      const saved = await taskFormRef.current.handleSave();
+      await taskFormRef.current.handleSave();
     }
     
     if (router.canDismiss()) {

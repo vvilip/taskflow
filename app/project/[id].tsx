@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Alert, ScrollView, TouchableOpacity, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
@@ -22,7 +22,6 @@ export default function ProjectDetailScreen() {
   
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isEditing, setIsEditing] = useState(isNew);
-  const [loading, setLoading] = useState(!isNew);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -43,10 +42,8 @@ export default function ProjectDetailScreen() {
           router.back();
         }
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to load project');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -65,7 +62,7 @@ export default function ProjectDetailScreen() {
         setIsEditing(false);
         await loadData();
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to save project');
     }
   };
@@ -85,7 +82,7 @@ export default function ProjectDetailScreen() {
                 await projectService.deleteProject(id);
                 router.back();
               }
-            } catch (error) {
+            } catch {
               Alert.alert('Error', 'Failed to delete project');
             }
           },
@@ -104,7 +101,7 @@ export default function ProjectDetailScreen() {
         await projectService.archiveProject(id);
       }
       await loadData();
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to archive project');
     }
   };
@@ -128,7 +125,7 @@ export default function ProjectDetailScreen() {
           loadData();
         }, 1700);
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to update task');
       await loadData();
     }

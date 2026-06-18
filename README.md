@@ -1,50 +1,89 @@
-# Welcome to your Expo app 👋
+# taskflow
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A GTD-style (Getting Things Done) task manager for iOS and Android, built with Expo and React Native.
 
-## Get started
+## Features
 
-1. Install dependencies
+- **Inbox, Today, Calendar, Projects, Settings** tabs with swipe navigation
+- **Tasks** with priority (low/medium/high), due dates, status (waiting/someday), project assignment, and tags
+- **Natural-language date parsing** in task titles: type "today", "tomorrow", "monday", or German equivalents ("heute", "morgen", "montag", ...) and the due date is set automatically
+- **Projects** with name, description, goal, color, and archive support
+- **Tags** with optional color
+- **Local persistence** via AsyncStorage (JSON)
+- **Export / import** as a JSON file using the native share sheet
+- **WebDAV / Nextcloud sync** with last-write-wins conflict resolution; supports force-push and force-pull
+- **Daily task reminder** notification at noon (native platforms only, includes today's task count)
+- **Light / dark / system** theme, persisted across sessions
 
-   ```bash
-   npm install
-   ```
+## Tech Stack
 
-2. Start the app
+- React Native 0.81 / React 19
+- Expo 54 (new architecture enabled, React Compiler enabled)
+- expo-router 6 (file-based routing, typed routes)
+- TypeScript 5.9
+- `@react-native-async-storage/async-storage` for local storage
+- `webdav` library for WebDAV/Nextcloud sync
+- `expo-notifications` for push notifications
+- `expo-sharing` + `expo-file-system` for data export/import
+- `@react-navigation/material-top-tabs` for swipeable tab navigation
 
-   ```bash
-   npx expo start
-   ```
+## Prerequisites
 
-In the output, you'll find options to open the app in a
+- Node.js 18+
+- npm
+- Expo Go app (for quick preview) or a development build for full native features (notifications, file sharing)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Getting Started
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+| Script | Command | Description |
+|---|---|---|
+| start | `npm start` | Start Expo dev server |
+| android | `npm run android` | Open on Android emulator/device |
+| ios | `npm run ios` | Open on iOS simulator/device |
+| web | `npm run web` | Open in browser |
+| lint | `npm run lint` | Run ESLint |
 
-## Learn more
+## Project Structure
 
-To learn more about developing your project with Expo, look at the following resources:
+```
+app/
+  (tabs)/
+    index.tsx        # Inbox
+    today.tsx        # Today's tasks
+    calendar.tsx     # Calendar view
+    projects.tsx     # Projects list
+    settings.tsx     # Settings (theme, notifications, sync, export)
+  archive.tsx        # Archived projects
+  modal.tsx          # Task create/edit modal
+  project-modal.tsx  # Project create/edit modal
+  project/[id].tsx   # Project detail
+  webdav-setup.tsx   # WebDAV/Nextcloud connection setup
+components/          # Shared UI components
+constants/theme.ts   # Color tokens for light/dark
+contexts/
+  theme-context.tsx  # ThemeProvider + useTheme hook
+hooks/               # useColorScheme, useThemeColor
+services/
+  storage.service.ts  # AsyncStorage persistence + export/import
+  webdav.service.ts   # WebDAV sync
+  notification.service.ts  # Daily reminders
+  task.service.ts
+  project.service.ts
+  tag.service.ts
+types/gtd.ts         # Task, Project, Tag, GTDData types
+utils/
+  date-parser.ts     # Natural-language date extraction from task titles
+  id-generator.ts
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Data and Sync
 
-## Join the community
+All data is stored locally as a single JSON document (`GTDData`) in AsyncStorage. The schema includes tasks, projects, tags, a version field, and sync metadata (timestamp + hash).
 
-Join our community of developers creating universal apps.
+**Export/Import:** The settings screen lets you export the full dataset as `taskflow-export-<timestamp>.json` via the native share sheet and import from any `.json` file on device.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+**WebDAV/Nextcloud sync:** Configure a server URL, username, and password in the WebDAV setup screen. Syncing uses a last-write-wins strategy based on the `lastSync` timestamp stored in the JSON file. Force-push and force-pull are available for manual conflict resolution. WebDAV is not supported on web.

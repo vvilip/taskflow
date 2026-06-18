@@ -4,6 +4,7 @@
  */
 
 import { Platform } from 'react-native';
+import type { NotificationRequest } from 'expo-notifications';
 import taskService from './task.service';
 
 // Only import notifications on native platforms
@@ -187,7 +188,7 @@ class NotificationService {
   /**
    * Get all scheduled notifications
    */
-  async getScheduledNotifications(): Promise<Notifications.NotificationRequest[]> {
+  async getScheduledNotifications(): Promise<NotificationRequest[]> {
     try {
       return await Notifications.getAllScheduledNotificationsAsync();
     } catch (error) {

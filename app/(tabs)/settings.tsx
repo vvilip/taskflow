@@ -14,7 +14,6 @@ export default function SettingsScreen() {
   const [syncing, setSyncing] = useState(false);
   const [autoArchive, setAutoArchive] = useState(false);
   const [dailyNotifications, setDailyNotifications] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [webdavConfigured, setWebdavConfigured] = useState(false);
   const [webdavInfo, setWebdavInfo] = useState<{ url: string; username: string } | null>(null);
   const { themeMode, setThemeMode } = useTheme();
@@ -38,9 +37,6 @@ export default function SettingsScreen() {
   };
 
   const checkNotificationStatus = async () => {
-    const enabled = await notificationService.isEnabled();
-    setNotificationsEnabled(enabled);
-    
     // Check if there are scheduled notifications
     const scheduled = await notificationService.getScheduledNotifications();
     setDailyNotifications(scheduled.length > 0);
@@ -54,7 +50,7 @@ export default function SettingsScreen() {
         'Your data has been exported as JSON. You can now save or share the file.',
         [{ text: 'OK' }]
       );
-    } catch (error) {
+    } catch {
       Alert.alert('Export Failed', 'Failed to export data. Please try again.');
     }
   };
@@ -94,7 +90,7 @@ export default function SettingsScreen() {
                     }
                   ]
                 );
-              } catch (error) {
+              } catch {
                 Alert.alert(
                   'Import Failed',
                   'Failed to import data. Please make sure the file is a valid Taskflow export.',
@@ -105,7 +101,7 @@ export default function SettingsScreen() {
           },
         ]
       );
-    } catch (error) {
+    } catch {
       Alert.alert('Import Failed', 'Failed to select file. Please try again.');
     }
   };
@@ -123,7 +119,7 @@ export default function SettingsScreen() {
             try {
               const count = await taskService.archiveOldCompletedTasks(30);
               Alert.alert('Success', `Archived ${count} tasks`);
-            } catch (error) {
+            } catch {
               Alert.alert('Error', 'Failed to archive tasks');
             }
           },
@@ -145,7 +141,7 @@ export default function SettingsScreen() {
             try {
               await storageService.clearAll();
               Alert.alert('Success', 'All data cleared');
-            } catch (error) {
+            } catch {
               Alert.alert('Error', 'Failed to clear data');
             }
           },
@@ -174,7 +170,7 @@ export default function SettingsScreen() {
         result.success ? 'Sync Complete' : 'Sync Failed',
         result.message
       );
-    } catch (error) {
+    } catch {
       Alert.alert('Sync Failed', 'An error occurred during sync');
     } finally {
       setSyncing(false);
@@ -214,7 +210,6 @@ export default function SettingsScreen() {
       const success = await notificationService.scheduleDailyNotificationWithCount();
       if (success) {
         setDailyNotifications(true);
-        setNotificationsEnabled(true);
         Alert.alert(
           'Notifications Enabled',
           'You will receive a daily reminder at 12:00 PM'

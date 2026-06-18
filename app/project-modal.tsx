@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, Platform, Dimensions, Keyboard } from 'react-native';
+import { StyleSheet, TouchableOpacity, Dimensions, Keyboard } from 'react-native';
 import { ThemedView } from '@/components/themed-view';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -25,7 +25,7 @@ export default function ProjectModalScreen() {
   const handleClose = async () => {
     // Try to save before closing (only if there's content)
     if (projectFormRef.current?.handleSave) {
-      const saved = await projectFormRef.current.handleSave();
+      await projectFormRef.current.handleSave();
       // If save returned false, it means validation failed - just close modal without saving
     }
     

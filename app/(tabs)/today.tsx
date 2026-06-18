@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Alert, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { ThemedView } from '@/components/themed-view';
@@ -11,7 +11,6 @@ import { taskService } from '@/services';
 
 export default function TodayScreen() {
   const [todayTasks, setTodayTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -23,10 +22,8 @@ export default function TodayScreen() {
     try {
       const today = await taskService.getTodayTasks();
       setTodayTasks(today);
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to load tasks');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -49,7 +46,7 @@ export default function TodayScreen() {
           loadTasks();
         }, 1700);
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to update task');
       await loadTasks();
     }

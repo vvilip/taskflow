@@ -2,8 +2,8 @@ import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'rea
 import { StyleSheet, Alert, ScrollView, TouchableOpacity, TextInput, Platform } from 'react-native';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
-import { Task, Priority, TaskStatus, Project, Tag } from '@/types/gtd';
-import { taskService, projectService, tagService } from '@/services';
+import { Task, Priority, TaskStatus, Project } from '@/types/gtd';
+import { taskService, projectService } from '@/services';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { parseTaskTitle } from '@/utils/date-parser';
@@ -16,7 +16,7 @@ interface TaskFormProps {
   onClose?: () => void;
 }
 
-export const TaskForm = forwardRef(({ id, projectId, onSave, onClose }: TaskFormProps, ref) => {
+export const TaskForm = forwardRef(function TaskForm({ id, projectId, onSave, onClose }: TaskFormProps, ref) {
   const isNew = id === 'new';
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
@@ -33,8 +33,6 @@ export const TaskForm = forwardRef(({ id, projectId, onSave, onClose }: TaskForm
   });
   
   const [projects, setProjects] = useState<Project[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [loading, setLoading] = useState(!isNew);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   useImperativeHandle(ref, () => ({
@@ -47,13 +45,8 @@ export const TaskForm = forwardRef(({ id, projectId, onSave, onClose }: TaskForm
 
   const loadData = async () => {
     try {
-      const [allProjects, allTags] = await Promise.all([
-        projectService.getAllProjects(),
-        tagService.getAllTags(),
-      ]);
-      
+      const allProjects = await projectService.getAllProjects();
       setProjects(allProjects);
-      setTags(allTags);
 
       if (!isNew && id) {
         const tasks = await taskService.getAllTasks();
@@ -65,10 +58,8 @@ export const TaskForm = forwardRef(({ id, projectId, onSave, onClose }: TaskForm
           onClose?.();
         }
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to load data');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -86,7 +77,7 @@ export const TaskForm = forwardRef(({ id, projectId, onSave, onClose }: TaskForm
       }
       
       return !!savedTask;
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to save task');
       return false;
     }
@@ -107,7 +98,7 @@ export const TaskForm = forwardRef(({ id, projectId, onSave, onClose }: TaskForm
                 await taskService.deleteTask(id);
                 onClose?.();
               }
-            } catch (error) {
+            } catch {
               Alert.alert('Error', 'Failed to delete task');
             }
           },
@@ -265,39 +256,39 @@ export const TaskForm = forwardRef(({ id, projectId, onSave, onClose }: TaskForm
             style={[
               styles.dateButton, 
               { borderColor: colors.border },
-              task.dueDate && isDueDateToday(task.dueDate, 0) && [styles.dateButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }]
+              task.dueDate != null && isDueDateToday(task.dueDate, 0) && [styles.dateButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }]
             ]}
             onPress={() => setDueDate(0)}
           >
             <ThemedText style={[
               styles.dateButtonText,
-              task.dueDate && isDueDateToday(task.dueDate, 0) && styles.dateButtonTextActive
+              task.dueDate != null && isDueDateToday(task.dueDate, 0) && styles.dateButtonTextActive
             ]}>Today</ThemedText>
           </TouchableOpacity>
           <TouchableOpacity
             style={[
               styles.dateButton, 
               { borderColor: colors.border },
-              task.dueDate && isDueDateToday(task.dueDate, 1) && [styles.dateButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }]
+              task.dueDate != null && isDueDateToday(task.dueDate, 1) && [styles.dateButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }]
             ]}
             onPress={() => setDueDate(1)}
           >
             <ThemedText style={[
               styles.dateButtonText,
-              task.dueDate && isDueDateToday(task.dueDate, 1) && styles.dateButtonTextActive
+              task.dueDate != null && isDueDateToday(task.dueDate, 1) && styles.dateButtonTextActive
             ]}>Tomorrow</ThemedText>
           </TouchableOpacity>
           <TouchableOpacity
             style={[
               styles.dateButton, 
               { borderColor: colors.border },
-              task.dueDate && isDueDateToday(task.dueDate, 7) && [styles.dateButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }]
+              task.dueDate != null && isDueDateToday(task.dueDate, 7) && [styles.dateButtonActive, { backgroundColor: colors.tint, borderColor: colors.tint }]
             ]}
             onPress={() => setDueDate(7)}
           >
             <ThemedText style={[
               styles.dateButtonText,
-              task.dueDate && isDueDateToday(task.dueDate, 7) && styles.dateButtonTextActive
+              task.dueDate != null && isDueDateToday(task.dueDate, 7) && styles.dateButtonTextActive
             ]}>Next Week</ThemedText>
           </TouchableOpacity>
           <TouchableOpacity

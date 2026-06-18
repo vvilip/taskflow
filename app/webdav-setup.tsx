@@ -117,7 +117,7 @@ export default function WebDAVSetupScreen() {
                 autoCorrect={false}
               />
               <ThemedText style={[styles.hint, { color: colors.subtitle }]}>
-                For Nextcloud, it's recommended to use an app password
+                For Nextcloud, an app password is recommended
               </ThemedText>
 
               <TouchableOpacity

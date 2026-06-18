@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Alert, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
@@ -42,13 +42,12 @@ export default function CalendarScreen() {
       
       // Filter tasks for selected date
       filterTasksForDate(selectedDate, allTasks);
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to load tasks');
     }
   };
 
   const filterTasksForDate = (date: Date, allTasks?: Task[]) => {
-    const dateKey = getDateKey(date);
     const startOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0, 0);
     const endOfDay = new Date(date);
@@ -114,7 +113,7 @@ export default function CalendarScreen() {
           loadTasks();
         }, 1700);
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to update task');
       await loadTasks();
     }

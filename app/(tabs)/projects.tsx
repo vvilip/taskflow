@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Alert, TouchableOpacity, FlatList, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
@@ -6,12 +6,11 @@ import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { FabButton } from '@/components/fab-button';
 import { Project } from '@/types/gtd';
-import { projectService, taskService } from '@/services';
+import { projectService } from '@/services';
 
 export default function ProjectsScreen() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [taskCounts, setTaskCounts] = useState<Record<string, number>>({});
-  const [loading, setLoading] = useState(true);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -29,10 +28,8 @@ export default function ProjectsScreen() {
         counts[project.id] = await projectService.getProjectTaskCount(project.id);
       }
       setTaskCounts(counts);
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to load projects');
-    } finally {
-      setLoading(false);
     }
   };
 
